@@ -1,0 +1,89 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: vigil-admin
+    description: Protected Vigil administration
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /vigil/admin:
+    get:
+      operationId: getVigilAdminOverview
+      tags: [vigil-admin]
+      summary: Get subscriber and revenue overview
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Admin overview
+        "401":
+          description: Authentication required
+        "403":
+          description: Admin role required
+  /vigil/admin/users/{userId}:
+    delete:
+      operationId: deleteVigilUser
+      tags: [vigil-admin]
+      summary: Permanently delete a Vigil user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User deleted
+  /vigil/admin/users/{userId}/cancel:
+    post:
+      operationId: getVigilCancellationInstructions
+      tags: [vigil-admin]
+      summary: Return platform-correct subscription cancellation guidance
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cancellation guidance
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+

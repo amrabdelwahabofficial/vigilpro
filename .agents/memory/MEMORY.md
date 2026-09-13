@@ -1,0 +1,17 @@
+- [Vigil visual direction](vigil-visual-direction.md) — preserve the approved red, action-oriented mobile design and its calm financial hierarchy.
+- [Vigil mobile billing](vigil-mobile-billing.md) — this product is Expo/React Native, so use react-native-purchases rather than a Swift Package.
+- [Vigil feature gating](vigil-feature-gating.md) — Free covers core manual planning; Pro owns multi-modal capture and full Analysis.
+- [Vigil iOS publishing](vigil-ios-publishing.md) — Clerk's iOS SPM integration needs Expo precompiled iOS modules disabled for CocoaPods builds.
+- [Vigil appearance selection](vigil-appearance-selection.md) — carry pre-signup Light/Dark/Auto choices across the Clerk account-state reload into onboarding.
+- [Expo Clerk browser testing](expo-clerk-browser-testing.md) — automated Clerk sessions cannot currently cross from Replit's shared host to the managed Expo preview host.
+- [RevenueCat store catalog](revenuecat-store-catalog.md) — Test Store products do not replace production App Store products or their store pricing.
+- [Clerk signup profile fields](clerk-signup-profile-fields.md) — create the email identity first, then save profile names after the Clerk session is active.
+- [Clerk password recovery](clerk-password-recovery.md) — use the reset email code and first-factor attempt flow; do not rely on older reset helpers.
+- [Vigil AI advisor](vigil-ai-advisor.md) — keep advisor requests behind the authenticated API route and use Replit-managed OpenAI integration rather than client-side keys.
+- [Vigil capture currency](vigil-capture-currency.md) — bank imports detect ISO currency per transaction and convert source → AED → the account currency before saving.
+- [Vigil bucket labels](vigil-bucket-labels.md) — change displayed bucket names through localization while preserving stable stored IDs for existing plans and transactions.
+- [Vigil offline startup](vigil-offline-startup.md) — cached authenticated accounts may open local planning while Clerk reconnects; new sign-ins still require connectivity.
+- [Vigil Apple sessions](vigil-apple-sessions.md) — native Apple uses server-issued opaque sessions and verified Apple subjects, independent of Clerk.
+- [Web auth account switching](web-auth-account-switching.md) — an active Clerk browser session must expose an explicit sign-out path from the sign-in route.
+- [Vigil web entry](vigil-web-entry.md) — the mobile artifact’s production root is served by its standalone landing template, while web preview routing can use the Expo landing route.
+- [Expo GitHub builds](expo-github-builds.md) — EAS needs a project-level repository link and the monorepo base directory, not only Replit GitHub authorization.

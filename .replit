@@ -1,0 +1,57 @@
+modules = ["nodejs-24", "python-base-3.13", "postgresql-16"]
+
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "vigil-regressions"
+
+[[workflows.workflow]]
+name = "vigil-regressions"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter @workspace/vigil-spend test"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
+
+[nix]
+channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+EXPO_PUBLIC_REVENUECAT_IOS_API_KEY = "appl_czupINwijqbNYMcEQQjOhqxIxcn"
+EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY = "test_vKTFHUTWGabbYDWubARVEfGEthN"
+EXPO_PUBLIC_REVENUECAT_TEST_API_KEY = "test_IPWfOPHScnLocAMZyBYpsBXhApv"
+REVENUECAT_PROJECT_ID = "proj2b3975d5"
+APPLE_SIGN_IN_WEB_CLIENT_ID = "com.vigilspend.signin"
+APPLE_SIGN_IN_WEB_REDIRECT_URI = "https://vigilspend.com/api/vigil/apple/web/callback"
+APPLE_SIGN_IN_CLIENT_ID = "com.vigilspend"
+EXPO_PUBLIC_APPLE_WEB_AUTH_ORIGIN = "https://vigilspend.com"
+APPLE_SIGN_IN_KEY_ID = "34B3AU99NF"
+APPLE_SIGN_IN_TEAM_ID = "RYCFZNC8UV"

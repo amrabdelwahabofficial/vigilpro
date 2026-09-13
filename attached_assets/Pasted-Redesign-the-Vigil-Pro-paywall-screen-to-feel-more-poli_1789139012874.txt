@@ -1,0 +1,102 @@
+Redesign the Vigil Pro paywall screen to feel more polished, premium, and mobile-first.
+
+Use the current Vigil brand style (clean, modern, minimal, trustworthy) and keep it visually consistent with the rest of the app.
+You can take inspiration from the structure and clarity of the Cal AI paywall, but do not copy it directly.
+The result should feel like Vigil’s own design.
+
+Main goals
+The paywall should look much better visually.
+The yearly plan must appear first and be selected by default.
+Before the pricing options, add a short “preparing for you” / onboarding-style section so the screen feels warmer and more premium.
+Keep the subscription logic intact — this is mainly a UI/UX redesign.
+Required structure
+1. Top section
+Clean top bar with back button.
+Add a short intro/loading-style section before the offer:
+headline like: “We’re preparing everything for you now”
+short supportive text like: “Vigil Pro unlocks your full experience and gives you smarter tools to track, understand, and improve your spending.”
+Under that, show 3 short benefit rows/cards, for example:
+Voice capture for expenses
+Receipt & bank-message scanning
+Deeper AI analysis and smart categories
+2. Main paywall section
+Then show a strong headline, e.g.:
+“Unlock Vigil Pro”
+or “Unlock everything Vigil can do for you”
+Optional short subheadline explaining value.
+3. Pricing options
+Show Yearly option first.
+Show Monthly option second.
+The Yearly option should be highlighted as the recommended/best value choice.
+The yearly card should clearly show:
+plan name
+savings message (example: “Best value” or “Save more”)
+annual billing note
+localized price if available
+The monthly card should be visually secondary.
+4. CTA
+One strong primary button at the bottom.
+CTA text should update based on selected plan, for example:
+“Continue with Yearly”
+“Continue with Monthly”
+5. Footer
+Small footer links:
+Terms
+Privacy
+Restore
+Style direction
+Minimal, premium, elegant, and clean.
+White or very light background.
+Strong typography.
+Use Vigil’s brand accent color for highlights and CTA.
+Better spacing, hierarchy, and card styling than the current screen.
+Rounded cards/buttons are fine.
+The design should feel modern and high-converting.
+Important
+Do not change the RevenueCat setup or product IDs.
+Keep using the existing subscription products:
+vigil_pro_yearly
+vigil_pro_monthly
+Do not break purchase logic, restore purchases, or entitlement checks.
+Focus on layout, styling, copy, and ordering of the plans.
+Deliverable
+
+Please redesign the screen and implement the updated paywall UI in the app.
+
+Jestli chceš, můžu ti hned udělat i kratší verzi, aby to nežralo tolik Replit kreditů.
+
+ANO
+
+Jasně — tady je kratší verze, aby to sežralo míň kreditů:
+
+Short prompt for Replit:
+
+Redesign the Vigil Pro paywall screen to look cleaner, more premium, and more mobile-friendly.
+
+Use Vigil’s own brand style: minimal, modern, trustworthy, and elegant.
+Take light inspiration from the structure of the Cal AI paywall, but do not copy it.
+
+Requirements
+Show the Yearly plan first and make it selected by default.
+Show the Monthly plan second.
+Add a short section before the pricing cards with a warm onboarding feel:
+headline: “We’re preparing everything for you now”
+short text explaining that Vigil Pro unlocks the full experience.
+Include 3 short benefit points before the pricing:
+Voice capture
+Receipt & bank-message scanning
+Deeper AI analysis
+Add a clear paywall headline like:
+“Unlock Vigil Pro”
+Make the Yearly plan visually highlighted as best value.
+Keep one strong CTA button at the bottom.
+Add footer links:
+Terms
+Privacy
+Restore
+Important
+Do not change RevenueCat setup, product IDs, or subscription logic.
+Keep using:
+vigil_pro_yearly
+vigil_pro_monthly
+Focus only on UI/UX redesign, layout, styling, and plan order.

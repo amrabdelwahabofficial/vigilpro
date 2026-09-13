@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/vigil-spend/"
+title = "Vigil — Know Where It All Goes"
+description = "A personalized spending-awareness app that helps people log transactions quickly, see depleted budget buckets, build better money habits, and unlock deeper monthly insights with a native subscription."
+version = "1.0.0"
+id = "artifacts/vigil-spend"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/", "/vigil-spend/" ]
+localPort = 20764
+
+[services.development]
+run = "pnpm --filter @workspace/vigil-spend run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/vigil-spend", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/vigil-spend", "run", "serve" ]
+
+[services.env]
+PORT = "20764"
+BASE_PATH = "/vigil-spend/"
