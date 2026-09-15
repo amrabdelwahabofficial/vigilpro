@@ -168,7 +168,7 @@ test('onboarding builds a personalized plan before showing the paywall', () => {
   assert.match(onboardingSource, /const \[personalizing, setPersonalizing\] = useState\(false\)/);
   assert.match(onboardingSource, /setPersonalizing\(true\)/);
   assert.match(onboardingSource, /setPersonalizing\(false\);\s*setStep\(5\)/);
-  assert.match(onboardingSource, /const PERSONALIZATION_DURATION_MS = 4500/);
+  assert.match(onboardingSource, /const PERSONALIZATION_DURATION_MS = 10000/);
   assert.match(onboardingSource, /Animated\.timing\(personalizationProgress/);
   assert.match(onboardingSource, /accessibilityRole="progressbar"/);
   assert.match(onboardingSource, /personalizationProgress\.interpolate/);

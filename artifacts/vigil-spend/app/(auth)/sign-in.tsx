@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import { useClerk, useSSO } from '@clerk/expo';
+import { useSignInWithApple } from '@clerk/expo/apple';
 import { useSignIn, useSignUp } from '@clerk/expo/legacy';
 import { Ionicons } from '@expo/vector-icons';
 import { Language, ThemeMode, useVigil } from '@/context/AppContext';
@@ -27,11 +28,118 @@ function getAuthErrorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback;
 }
 
+function safeClerkLogMessage(value: unknown): string {
+  return String(value ?? 'Unknown Clerk error')
+    .replace(/\b(?:pk|sk)_(?:test|live)_[A-Za-z0-9_-]+/g, '[redacted-clerk-key]')
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, '[redacted-token]')
+    .slice(0, 500);
+}
+
+function logWebAppleClerkError(error: unknown) {
+  const candidate = error as {
+    code?: string;
+    message?: string;
+    longMessage?: string;
+    errors?: Array<{ code?: string; longMessage?: string; message?: string }>;
+  };
+  const details = Array.isArray(candidate?.errors)
+    ? candidate.errors.map((item) => ({
+        code: item.code || 'unknown',
+        message: safeClerkLogMessage(item.longMessage || item.message),
+      }))
+    : [{
+        code: candidate?.code || 'unknown',
+        message: safeClerkLogMessage(candidate?.longMessage || candidate?.message || error),
+      }];
+  console.error('[Vigil] Web Apple Clerk sign-in failed', { errors: details });
+}
+
+function stringStatus(value: unknown): string | null {
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
+
+function summarizeWebAppleSsoResult(result: unknown) {
+  const candidate = (result && typeof result === 'object' ? result : {}) as {
+    createdSessionId?: unknown;
+    authSessionResult?: { type?: unknown };
+    signIn?: {
+      status?: unknown;
+      missingFields?: unknown;
+      firstFactorVerification?: { status?: unknown };
+      secondFactorVerification?: { status?: unknown };
+    };
+    signUp?: {
+      status?: unknown;
+      missingFields?: unknown;
+      verifications?: {
+        emailAddress?: { status?: unknown };
+        phoneNumber?: { status?: unknown };
+      };
+    };
+  };
+
+  return {
+    createdSessionIdPresent: Boolean(candidate.createdSessionId),
+    authSessionType: stringStatus(candidate.authSessionResult?.type),
+    signInStatus: stringStatus(candidate.signIn?.status),
+    signInMissingFields: stringList(candidate.signIn?.missingFields),
+    firstFactorStatus: stringStatus(candidate.signIn?.firstFactorVerification?.status),
+    secondFactorStatus: stringStatus(candidate.signIn?.secondFactorVerification?.status),
+    signUpStatus: stringStatus(candidate.signUp?.status),
+    signUpMissingFields: stringList(candidate.signUp?.missingFields),
+    emailVerificationStatus: stringStatus(candidate.signUp?.verifications?.emailAddress?.status),
+    phoneVerificationStatus: stringStatus(candidate.signUp?.verifications?.phoneNumber?.status),
+  };
+}
+
+function webAppleStatusMessage(state: ReturnType<typeof summarizeWebAppleSsoResult>): string {
+  const statuses = [
+    state.signInStatus,
+    state.signUpStatus,
+    state.firstFactorStatus,
+    state.secondFactorStatus,
+    state.emailVerificationStatus,
+    state.phoneVerificationStatus,
+  ].filter(Boolean);
+  const statusText = statuses.length > 0 ? statuses.join(', ') : 'unknown';
+
+  if (state.authSessionType && state.authSessionType !== 'success') {
+    return `Apple sign-in browser flow ended with ${state.authSessionType}.`;
+  }
+  if (state.signInStatus === 'needs_second_factor' || state.secondFactorStatus === 'unverified') {
+    return `Apple sign-in requires a second factor (${statusText}). Complete the additional verification and try again.`;
+  }
+  if (state.signInStatus === 'needs_identifier') {
+    return `Apple sign-in needs an identifier (${statusText}).`;
+  }
+  if (state.signInStatus === 'needs_first_factor' || state.firstFactorStatus === 'unverified') {
+    return `Apple sign-in still needs first-factor verification (${statusText}).`;
+  }
+  if (state.signInStatus === 'needs_new_password') {
+    return `Apple sign-in requires a new password (${statusText}).`;
+  }
+  if (state.signInStatus === 'complete' || state.signUpStatus === 'complete') {
+    return `Clerk reported a complete Apple sign-in state (${statusText}) but did not return a session.`;
+  }
+  return `Apple sign-in returned Clerk state ${statusText}.`;
+}
+
+function getWebAppleRedirectUrl(): string {
+  const proxyUrl = process.env.EXPO_PUBLIC_CLERK_PROXY_URL?.replace(/\/+$/, '');
+  if (proxyUrl) return `${proxyUrl}/v1/oauth_callback`;
+  return AuthSession.makeRedirectUri({ path: 'sso-callback' });
+}
+
 export default function SignInScreen() {
   const { palette, t, language, setLanguage, setProfileFirstName, themeMode, setThemeMode } = useVigil();
   const identity = useIdentity();
-  const { isLoaded, isSignedIn, getToken, signInWithApple, signOut: signOutIdentity, activateClerk, clerkAvailable } = identity;
+  const { isLoaded, isSignedIn, getToken, signOut: signOutIdentity, activateClerk, clerkAvailable } = identity;
   const { startSSOFlow } = useSSO();
+  const { startAppleAuthenticationFlow } = useSignInWithApple();
   const { isLoaded: signInLoaded, signIn: clerkSignIn } = useSignIn();
   const { isLoaded: signUpLoaded, signUp } = useSignUp();
   const { setActive } = useClerk();
@@ -192,19 +300,55 @@ export default function SignInScreen() {
   }, [activateClerk, destination, startSSOFlow]);
 
   const signInWithNativeApple = useCallback(async () => {
+    const providerName = 'Apple';
     try {
       setAuthMessage(null);
       setSocialLoading('apple');
-      const result = await signInWithApple();
-      continueAfterAuth(result.displayName?.split(/\s+/)[0], themeMode);
+      if (Platform.OS === 'ios') {
+        const { createdSessionId, setActive: activateSession } = await startAppleAuthenticationFlow();
+        if (!createdSessionId || !activateSession) {
+          throw new Error(`${providerName} sign-in needs one more verification step. Please try again.`);
+        }
+        await activateSession({ session: createdSessionId });
+        await activateClerk();
+        continueAfterAuth(undefined, themeMode);
+        return;
+      }
+      if (Platform.OS === 'web') {
+        const redirectUrl = getWebAppleRedirectUrl();
+        try {
+          const redirect = new URL(redirectUrl);
+          console.info('[Vigil] Web Apple Clerk redirect', {
+            origin: redirect.origin,
+            pathname: redirect.pathname,
+          });
+        } catch {
+          console.error('[Vigil] Web Apple Clerk redirect is not an absolute URL');
+        }
+        const ssoResult = await startSSOFlow({
+          strategy: 'oauth_apple',
+          redirectUrl,
+        });
+        const ssoState = summarizeWebAppleSsoResult(ssoResult);
+        console.info('[Vigil] Web Apple Clerk SSO result', ssoState);
+        if (ssoResult.createdSessionId && ssoResult.setActive) {
+          await ssoResult.setActive({ session: ssoResult.createdSessionId });
+          await activateClerk();
+          continueAfterAuth(undefined, themeMode);
+          return;
+        }
+        throw new Error(webAppleStatusMessage(ssoState));
+      }
+      throw new Error('Sign in with Apple is available in the iOS app only.');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Apple sign-in could not be completed. Please try again.';
+      if (Platform.OS === 'web') logWebAppleClerkError(error);
+      const message = error instanceof Error ? error.message : `${providerName} sign-in could not be completed. Please try again.`;
       setAuthMessage(message);
-      if (Platform.OS !== 'web') Alert.alert('Could not sign in with Apple', message);
+      if (Platform.OS !== 'web') Alert.alert(`Could not sign in with ${providerName}`, message);
     } finally {
       setSocialLoading(null);
     }
-  }, [continueAfterAuth, signInWithApple, themeMode]);
+  }, [activateClerk, continueAfterAuth, startAppleAuthenticationFlow, startSSOFlow, themeMode]);
 
   const createAccount = useCallback(async () => {
     if (!signUpLoaded || !signUp || !setActive) return;

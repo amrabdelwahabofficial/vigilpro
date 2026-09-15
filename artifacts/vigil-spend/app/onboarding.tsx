@@ -16,7 +16,7 @@ const questionKeys = [
   ['onboardingEyebrow3', 'onboardingTitle3', 'onboardingCopy3', 'onboardingChoices3'],
 ] as const;
 
-const PERSONALIZATION_DURATION_MS = 4500;
+const PERSONALIZATION_DURATION_MS = 10000;
 
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();

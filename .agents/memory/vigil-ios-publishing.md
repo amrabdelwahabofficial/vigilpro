@@ -21,8 +21,8 @@ Direct EAS production builds need the Clerk publishable key, RevenueCat iOS publ
 
 **How to apply:** Before each release, verify the EAS production environment contains the required public app configuration. Apple signing must also be validated once through the interactive EAS credential flow before non-interactive builds can run.
 
-The product keeps Google sign-in and now includes an Apple OAuth button using Clerk's `oauth_apple` strategy. The Apple provider still must be enabled and verified in Clerk Production before submission.
+The product keeps Google sign-in and uses Clerk's native Expo Apple hook on iOS, with Clerk's `oauth_apple` strategy limited to the web branch. The Apple provider still must be enabled and verified in Clerk Production before submission.
 
 **Why:** Apple review commonly expects Sign in with Apple when a third-party social login is offered, while Google remains part of the product's chosen login set.
 
-**How to apply:** Do not remove Google without an explicit request. Enable Apple under the Clerk Auth pane for both Development and Production, configure the Apple Developer credentials there, and complete a real-device Production sign-in test before App Store submission.
+**How to apply:** Do not remove Google without an explicit request. Enable Apple under the Clerk Auth pane for both Development and Production, configure the Apple Developer credentials there, and complete a real-device Production sign-in test before App Store submission. Keep Clerk native client synchronization disabled unless the iOS build is deliberately migrated to Clerk's native Swift package bridge.

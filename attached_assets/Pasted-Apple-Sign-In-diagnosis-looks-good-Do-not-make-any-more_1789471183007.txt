@@ -1,0 +1,52 @@
+Apple Sign-In diagnosis looks good. Do not make any more Apple authentication changes for now.
+
+Before we create another TestFlight build, I want to diagnose the RevenueCat/App Store configuration because this project was migrated from Base44 to Replit and we later created a NEW App Store Connect app and a NEW RevenueCat project.
+
+The production configuration we want is:
+
+* iOS Bundle ID: com.vigilspend
+* App Store Connect app: NEW “Vigil Pro Unlimited” app
+* RevenueCat: NEW RevenueCat project for this app
+* Products:
+    * vigil_unlimited_monthly
+    * vigil_unlimited_yearly
+* Current offering: default
+* Packages: $rc_monthly and $rc_annual
+
+The previous TestFlight build could not load the Apple subscription plans.
+
+Perform a READ-ONLY audit first. Do not modify anything.
+
+Check the entire Replit project for:
+
+1. Actual iOS bundle identifier used by Expo/EAS.
+2. Current Expo/EAS project ID and owner.
+3. Every RevenueCat API key/reference and where it comes from.
+4. Whether the production iOS/TestFlight build receives EXPO_PUBLIC_REVENUECAT_IOS_API_KEY.
+5. Whether that key is the iOS App Store Public SDK key from the NEW RevenueCat project rather than the Test Store key or old Base44 RevenueCat project.
+6. Any remaining Base44 bundle IDs, RevenueCat keys, product IDs, Apple IDs, URLs or configuration.
+7. Exactly where Purchases.configure() is called and which API key is passed on iOS.
+8. Whether RevenueCat is accidentally configured more than once.
+9. Exactly how Purchases.getOfferings() is called and how the default offering is selected.
+10. Whether the app expects $rc_monthly and $rc_annual.
+11. Whether the expected product identifiers are exactly vigil_unlimited_monthly and vigil_unlimited_yearly.
+12. Whether any RevenueCat Test Store configuration can be selected in a TestFlight/release build.
+13. Whether the existing TestFlight build predates the current RevenueCat configuration.
+
+Also inspect build configuration for anything that could cause TestFlight to receive a different environment/API key than the Replit web/dev environment.
+
+Do NOT expose full API keys or secrets.
+
+Give me the results as:
+
+Setting | Current value/source | Expected value | Status | Action required
+
+At the end answer these three questions explicitly:
+
+A. Is there any old Base44 configuration still affecting the current iOS app?
+
+B. Is the current Replit iOS build definitely using the NEW RevenueCat project’s iOS App Store Public SDK key?
+
+C. Based on the code/configuration, what is the most likely reason TestFlight cannot retrieve the two subscription products?
+
+Do not fix anything until I approve the audit findings.

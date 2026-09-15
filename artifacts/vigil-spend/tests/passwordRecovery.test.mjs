@@ -93,11 +93,25 @@ test('an existing web session can continue or switch accounts', () => {
 test('sign-in offers native Apple alongside the retained Google path', () => {
   assert.match(signInSource, /type SocialProvider = 'google' \| 'apple'/);
   assert.match(signInSource, /signInWithNativeApple/);
-  assert.match(signInSource, /signInWithApple/);
+  assert.match(signInSource, /useSignInWithApple.*@clerk\/expo\/apple/);
+  assert.match(signInSource, /startAppleAuthenticationFlow/);
   assert.match(identitySource, /Platform\.OS !== 'ios'/);
   assert.doesNotMatch(identitySource, /signInWithWebApple/);
   assert.match(signInSource, /Platform\.OS === 'ios' \|\| Platform\.OS === 'web'/);
-  assert.doesNotMatch(signInSource, /oauth_apple/);
+  assert.match(signInSource, /strategy: 'oauth_apple'/);
+  assert.match(signInSource, /function getWebAppleRedirectUrl/);
+  assert.match(signInSource, /EXPO_PUBLIC_CLERK_PROXY_URL/);
+  assert.match(signInSource, /v1\/oauth_callback/);
+  assert.match(signInSource, /AuthSession\.makeRedirectUri\(\{ path: 'sso-callback' \}\)/);
+  assert.match(signInSource, /summarizeWebAppleSsoResult/);
+  assert.match(signInSource, /needs_second_factor/);
+  assert.match(signInSource, /needs_identifier/);
+  assert.match(signInSource, /needs_first_factor/);
+  assert.match(signInSource, /needs_new_password/);
+  assert.match(signInSource, /Web Apple Clerk SSO result/);
+  assert.match(signInSource, /logWebAppleClerkError/);
+  assert.match(signInSource, /if \(Platform\.OS === 'ios'\)/);
+  assert.match(signInSource, /await activateSession\(\{ session: createdSessionId \}\)/);
   assert.match(signInSource, /strategy: 'oauth_google'/);
   assert.match(signInSource, /testID="apple-sign-in"/);
   assert.match(signInSource, /testID="apple-sign-up"/);
