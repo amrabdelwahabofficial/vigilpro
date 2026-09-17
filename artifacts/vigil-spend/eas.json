@@ -15,10 +15,17 @@
       "autoIncrement": true,
       "ios": {
         "image": "latest"
+      },
+      "environment": "production",
+      "env": {
+        "VIGIL_CLERK_MODE": "production",
+        "EXPO_PUBLIC_CLERK_USE_PROXY": "false"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ascAppId": "6811090049"
+    }
   }
 }

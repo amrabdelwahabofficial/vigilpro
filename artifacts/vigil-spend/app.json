@@ -2,7 +2,7 @@
   "expo": {
     "name": "Vigil — Know Where It All Goes",
     "slug": "vigilpro",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "vigil-spend",
