@@ -1,21 +1,23 @@
 {
   "expo": {
-    "name": "Vigil — Know Where It All Goes",
+    "name": "Vigil Spend",
     "slug": "vigilpro",
-    "version": "1.0.1",
+    "version": "1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "vigil-spend",
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.vigilspend",
+      "buildNumber": "23",
       "usesAppleSignIn": true,
       "supportsTablet": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "Vigil uses the camera to scan receipts you choose to log.",
-        "NSPhotoLibraryUsageDescription": "Vigil reads only the bank screenshots and receipts you select.",
-        "NSMicrophoneUsageDescription": "Vigil uses the microphone only when you record a spoken transaction."
+        "NSCameraUsageDescription": "Vigil Spend uses the camera to scan receipts you choose to log.",
+        "NSPhotoLibraryUsageDescription": "Vigil Spend reads only the bank screenshots and receipts you select.",
+        "NSMicrophoneUsageDescription": "Vigil Spend uses the microphone only when you record a spoken transaction.",
+        "NSSpeechRecognitionUsageDescription": "Vigil Spend uses speech recognition to show your spoken transaction as you say it."
       }
     },
     "android": {
@@ -24,7 +26,8 @@
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
-      ]
+      ],
+      "package": "com.vigilspend"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -32,15 +35,26 @@
     "plugins": [
       "expo-router",
       "expo-apple-authentication",
+      "expo-notifications",
       "expo-secure-store",
+      "./plugins/withVigilAppShortcuts",
       [
         "expo-image-picker",
         {
-          "photosPermission": "Vigil reads only the bank screenshots and receipts you select.",
-          "cameraPermission": "Vigil uses the camera to scan receipts you choose to log."
+          "photosPermission": "Vigil Spend reads only the bank screenshots and receipts you select.",
+          "cameraPermission": "Vigil Spend uses the camera to scan receipts you choose to log."
         }
       ],
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Vigil Spend uses the microphone only when you record a spoken transaction.",
+          "speechRecognitionPermission": "Vigil Spend uses speech recognition to show your spoken transaction as you say it."
+        }
+      ],
+      "expo-asset",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

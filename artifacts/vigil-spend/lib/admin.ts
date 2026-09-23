@@ -8,7 +8,6 @@ export function isVigilAdmin(user: {
   primaryEmailAddress?: { emailAddress?: string | null } | null;
   emailAddresses?: { emailAddress?: string | null }[];
 } | null | undefined) {
-  if (user?.publicMetadata?.role === 'admin') return true;
   const emails = [
     user?.primaryEmailAddress?.emailAddress,
     ...(user?.emailAddresses ?? []).map((item) => item.emailAddress),

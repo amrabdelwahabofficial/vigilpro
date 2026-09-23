@@ -1,25 +1,45 @@
 {
   "cli": {
     "version": ">= 24.0.0",
-    "appVersionSource": "remote"
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "environment": "development",
+      "env": {
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "$VIGIL_EXTERNAL_CLERK_DEVELOPMENT_PUBLISHABLE_KEY",
+        "VIGIL_CLERK_MODE": "development",
+        "EXPO_PUBLIC_VIGIL_BUILD_PROFILE": "development",
+        "EXPO_PUBLIC_CLERK_USE_PROXY": "false",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_czupINwijqbNYMcEQQjOhqxIxcn"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "$VIGIL_EXTERNAL_CLERK_DEVELOPMENT_PUBLISHABLE_KEY",
+        "VIGIL_CLERK_MODE": "development",
+        "EXPO_PUBLIC_VIGIL_BUILD_PROFILE": "preview",
+        "EXPO_PUBLIC_CLERK_USE_PROXY": "false",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_czupINwijqbNYMcEQQjOhqxIxcn"
+      }
     },
     "production": {
-      "autoIncrement": true,
-      "ios": {
-        "image": "latest"
-      },
+      "autoIncrement": false,
       "environment": "production",
       "env": {
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "$VIGIL_EXTERNAL_CLERK_PUBLISHABLE_KEY",
         "VIGIL_CLERK_MODE": "production",
-        "EXPO_PUBLIC_CLERK_USE_PROXY": "false"
+        "EXPO_PUBLIC_VIGIL_BUILD_PROFILE": "production",
+        "EXPO_PUBLIC_CLERK_USE_PROXY": "false",
+        "EXPO_PUBLIC_DOMAIN": "vigilspend.com",
+        "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "appl_czupINwijqbNYMcEQQjOhqxIxcn"
+      },
+      "ios": {
+        "image": "latest"
       }
     }
   },

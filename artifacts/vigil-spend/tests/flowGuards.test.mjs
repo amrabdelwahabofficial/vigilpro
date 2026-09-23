@@ -73,9 +73,9 @@ test('unauthenticated web visitors get the public Vigil landing page', () => {
 
   assert.match(tabsSource, /isWeb && !offlineSession && !isSignedIn/);
   assert.match(tabsSource, /Redirect href="\/landing"/);
-  assert.match(landingSource, /Awareness is the first step to real change/);
-  assert.match(landingSource, /make the next money decision consciously/);
-  assert.match(landingSource, /Capture spending quickly/);
-  assert.match(productionLanding, /Try Vigil on your phone/);
+  assert.match(landingSource, /landingTitle/);
+  assert.match(landingSource, /landingCopy/);
+  assert.match(landingSource, /landingFeature1Title/);
+  assert.match(productionLanding, /Download on the App Store/);
   assert.doesNotMatch(productionLanding, /Download Expo Go/);
 });

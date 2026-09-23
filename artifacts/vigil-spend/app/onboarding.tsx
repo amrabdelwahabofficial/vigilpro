@@ -9,14 +9,20 @@ import { CountryPicker } from '@/components/CountryPicker';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useIdentity } from '@/context/IdentityContext';
 import { PaywallContent, Plan } from '@/components/Paywall';
+import { standardizeVisibleBrandCopy } from '@/lib/brand';
 
 const questionKeys = [
   ['onboardingEyebrow1', 'onboardingTitle1', 'onboardingCopy1', 'onboardingChoices1'],
   ['onboardingEyebrow2', 'onboardingTitle2', 'onboardingCopy2', 'onboardingChoices2'],
   ['onboardingEyebrow3', 'onboardingTitle3', 'onboardingCopy3', 'onboardingChoices3'],
 ] as const;
+const questionOptionIds = [
+  ['payday', 'savings', 'surprise', 'followable-plan'],
+  ['small-purchases', 'unexpected-bills', 'family-needs', 'emotional-spending'],
+  ['breathing-room', 'cushion', 'purchase-confidence', 'future-room'],
+] as const;
 
-const PERSONALIZATION_DURATION_MS = 4500;
+const PERSONALIZATION_DURATION_MS = 10000;
 
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
@@ -24,8 +30,8 @@ export default function OnboardingScreen() {
   const signupFirstName = typeof routeFirstName === 'string' ? routeFirstName.trim() : '';
   const signupAppearance: ThemeMode | null = routeAppearance === 'light' || routeAppearance === 'dark' || routeAppearance === 'auto' ? routeAppearance : null;
   const { isLoaded: authLoaded, isSignedIn, displayName } = useIdentity();
-  const { palette, t, language, countryCode, setCountry, completeOnboarding, addIncome, toBaseAmount, hydrated, onboardingComplete, formatNumber, themeMode, setThemeMode, profileFirstName, setProfileFirstName } = useVigil();
-  const { configured, error: subscriptionError, loading: subscriptionLoading, monthlyPackage, yearlyPackage, purchase, retry, restore } = useSubscription();
+  const { palette, t, language, countryCode, currency, setCountry, completeOnboarding, addIncome, toBaseAmount, hasCurrentRate, hydrated, onboardingComplete, formatNumber, themeMode, setThemeMode, profileFirstName, setProfileFirstName } = useVigil();
+  const { configured, error: subscriptionError, loading: subscriptionLoading, monthlyPackage, yearlyPackage, yearlyTrialEligible, purchase, retry, restore } = useSubscription();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
@@ -43,7 +49,7 @@ export default function OnboardingScreen() {
   const selectedPackage = selectedPlan === 'monthly' ? monthlyPackage : yearlyPackage;
   const canPurchase = configured && !subscriptionLoading && Boolean(selectedPackage);
   const incomePrompt: Record<Language, { title: string; copy: string; placeholder: string }> = {
-    en: { title: 'What should Vigil plan around, {name}?', copy: 'Enter your usual salary, the amount you currently have, or another starting amount. Vigil uses it to set your bucket limits.', placeholder: 'Salary or amount on hand' },
+    en: { title: 'What should Vigil Spend plan around, {name}?', copy: 'Enter your usual salary, the amount you currently have, or another starting amount. Vigil Spend uses it to set your bucket limits.', placeholder: 'Salary or amount on hand' },
     fr: { title: 'Sur quel montant Vigil doit-il se baser, {name} ?', copy: 'Saisissez votre salaire habituel, le montant que vous avez actuellement ou un autre montant de départ.', placeholder: 'Salaire ou montant disponible' },
     cs: { title: 'Z jaké částky má Vigil vycházet, {name}?', copy: 'Zadejte obvyklý příjem, částku, kterou máte právě k dispozici, nebo jinou počáteční částku.', placeholder: 'Příjem nebo částka k dispozici' },
     de: { title: 'Mit welchem Betrag soll Vigil planen, {name}?', copy: 'Gib dein übliches Gehalt, den aktuellen verfügbaren Betrag oder einen anderen Startbetrag ein.', placeholder: 'Gehalt oder verfügbarer Betrag' },
@@ -51,7 +57,7 @@ export default function OnboardingScreen() {
     ru: { title: 'От какой суммы Vigil должен планировать, {name}?', copy: 'Введите обычный доход, сумму, которая сейчас у вас есть, или другую начальную сумму.', placeholder: 'Доход или доступная сумма' },
     ar: { title: 'على أي مبلغ يخطط Vigil لك، {name}؟', copy: 'أدخل راتبك المعتاد، أو المبلغ المتاح لديك حالياً، أو أي مبلغ ابتدائي آخر.', placeholder: 'الراتب أو المبلغ المتاح' },
   };
-  const currentIncomePrompt = incomePrompt[language];
+  const currentIncomePrompt = standardizeVisibleBrandCopy(incomePrompt[language]);
 
   React.useEffect(() => {
     if (authLoaded && !isSignedIn) router.replace('/sign-in');
@@ -118,14 +124,14 @@ export default function OnboardingScreen() {
     await Haptics.selectionAsync();
   };
   const finishFree = async () => {
-    completeOnboarding();
+    completeOnboarding(answers);
     router.replace('/');
   };
-  const nextAnswer = async (answer: string) => {
+  const nextAnswer = async (answerId: string) => {
     if (selectedChoice) return;
-    setSelectedChoice(answer);
+    setSelectedChoice(answerId);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setAnswers((current) => [...current.slice(0, step), answer]);
+    setAnswers((current) => [...current.slice(0, step), answerId]);
     setTimeout(() => {
       setStep((current) => current + 1);
       setSelectedChoice(null);
@@ -142,7 +148,7 @@ export default function OnboardingScreen() {
         return;
       }
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      completeOnboarding();
+      completeOnboarding(answers);
       router.replace('/');
     } catch (error) {
       const message = error instanceof Error ? error.message : t('pleaseTryAgain');
@@ -158,7 +164,7 @@ export default function OnboardingScreen() {
       const restored = await restore();
       Alert.alert(t('restorePurchases'), restored ? t('proUnlocked') : t('noPurchaseFound'));
       if (restored) {
-        completeOnboarding();
+        completeOnboarding(answers);
         router.replace('/');
       }
     } catch (error) {
@@ -169,12 +175,34 @@ export default function OnboardingScreen() {
   };
   const displayStep = appearanceConfirmed ? Math.min(step + 2, totalSteps) : 1;
   const progress = `${(displayStep / totalSteps) * 100}%` as `${number}%`;
-  const primaryPressure = answers[0] || 'the pressure you named';
-  const desiredRelief = answers[2] || 'more breathing room';
+  const labelsFor = (questionIndex: number) => t(questionKeys[questionIndex][3]).split('|');
+  const labelForAnswer = (questionIndex: number, answerId: string | undefined) => {
+    const answerIndex = questionOptionIds[questionIndex].indexOf(answerId as never);
+    return answerIndex >= 0 ? labelsFor(questionIndex)[answerIndex] : '';
+  };
+  const primaryPressure = labelForAnswer(0, answers[0]) || t('pressureYouNamed');
+  const desiredRelief = labelForAnswer(2, answers[2]) || t('moreBreathingRoom');
   return (
-    <View style={[styles.page, { backgroundColor: palette.background, paddingTop: insets.top + 12, paddingBottom: Math.max(insets.bottom, 16) }]}>
+    <View style={[styles.page, { backgroundColor: palette.background, paddingTop: insets.top + 12, paddingBottom: Math.max(insets.bottom, 16), direction: language === 'ar' ? 'rtl' : 'ltr' }]}>
       <View style={styles.topRow}>
-        <Text style={[styles.brand, { color: palette.foreground }]}>VIGIL</Text>
+        {appearanceConfirmed && !personalizing && step <= 4 ? (
+          <Pressable
+            accessibilityLabel={t('back')}
+            onPress={() => {
+              setSelectedChoice(null);
+              if (step === 0) {
+                setAppearanceConfirmed(false);
+              } else {
+                setStep((current) => Math.max(0, current - 1));
+              }
+            }}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={18} color={palette.foreground} />
+            <Text style={[styles.backButtonText, { color: palette.foreground }]}>{t('back')}</Text>
+          </Pressable>
+        ) : <View />}
+        <Text style={[styles.brand, { color: palette.foreground }]}>Vigil Spend</Text>
         <Text style={[styles.stepText, { color: palette.mutedForeground }]}>{formatNumber(displayStep)} / {formatNumber(totalSteps)}</Text>
       </View>
       <View style={[styles.progressTrack, { backgroundColor: palette.track }]}><View style={[styles.progressFill, { width: progress, backgroundColor: palette.primary }]} /></View>
@@ -237,12 +265,15 @@ export default function OnboardingScreen() {
            <Text style={[styles.title, { color: palette.foreground }]}>{t(questionKeys[step][1])}</Text>
            <Text style={[styles.copy, { color: palette.mutedForeground }]}>{t(questionKeys[step][2])}</Text>
           <View style={styles.choiceList}>
-             {t(questionKeys[step][3]).split('|').map((choice) => (
-              <Pressable key={choice} onPress={() => void nextAnswer(choice)} style={({ pressed }) => [styles.choice, { backgroundColor: selectedChoice === choice ? palette.accent : palette.card, borderColor: selectedChoice === choice ? palette.primary : palette.border }, pressed && styles.pressed]}>
-                <Text style={[styles.choiceText, { color: selectedChoice === choice ? palette.primary : palette.foreground }]}>{choice}</Text>
-                <Ionicons name={selectedChoice === choice ? 'checkmark-circle' : 'arrow-forward'} size={19} color={palette.primary} />
-              </Pressable>
-            ))}
+             {questionOptionIds[step].map((choiceId, choiceIndex) => {
+               const choice = labelsFor(step)[choiceIndex] ?? choiceId;
+               return (
+                <Pressable key={choiceId} onPress={() => void nextAnswer(choiceId)} style={({ pressed }) => [styles.choice, { backgroundColor: selectedChoice === choiceId ? palette.accent : palette.card, borderColor: selectedChoice === choiceId ? palette.primary : palette.border }, pressed && styles.pressed]}>
+                  <Text style={[styles.choiceText, { color: selectedChoice === choiceId ? palette.primary : palette.foreground }]}>{choice}</Text>
+                  <Ionicons name={selectedChoice === choiceId ? 'checkmark-circle' : 'arrow-forward'} size={19} color={palette.primary} />
+                </Pressable>
+               );
+             })}
           </View>
         </ScrollView>
       )}
@@ -265,7 +296,7 @@ export default function OnboardingScreen() {
            <Text style={[styles.title, { color: palette.foreground }]}>{currentIncomePrompt.title.replace('{name}', firstName)}</Text>
            <Text style={[styles.copy, { color: palette.mutedForeground }]}>{currentIncomePrompt.copy}</Text>
            <TextInput value={income} onChangeText={setIncome} keyboardType="decimal-pad" placeholder={currentIncomePrompt.placeholder} placeholderTextColor={palette.mutedForeground} style={[styles.input, { color: palette.foreground, backgroundColor: palette.card, borderColor: palette.border }]} />
-            <Pressable onPress={() => { const value = Number(income); if (value > 0) addIncome(toBaseAmount(value)); void Haptics.selectionAsync(); setPersonalizing(true); }} style={[styles.primaryButton, { backgroundColor: palette.primary }]}><Text style={[styles.primaryText, { color: palette.primaryForeground }]}>{t('showPlan')}</Text></Pressable>
+           <Pressable onPress={() => { const value = Number(income); if (value > 0 && (currency === 'AED' || hasCurrentRate)) { addIncome(toBaseAmount(value), 'salary'); void Haptics.selectionAsync(); setPersonalizing(true); } else if (value > 0) Alert.alert(t('currencyConversionNeeded'), t('currencyConversionNeededCopy')); }} style={[styles.primaryButton, { backgroundColor: palette.primary }]}><Text style={[styles.primaryText, { color: palette.primaryForeground }]}>{t('showPlan')}</Text></Pressable>
         </View>
       )}
 
@@ -280,6 +311,7 @@ export default function OnboardingScreen() {
           onRetry={retry}
           yearlyPackage={yearlyPackage}
           monthlyPackage={monthlyPackage}
+           yearlyTrialEligible={yearlyTrialEligible}
           loading={subscriptionLoading}
           purchasing={purchasing}
           restoring={restoring}
@@ -294,6 +326,8 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   page: { flex: 1, paddingHorizontal: 22 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  backButton: { minHeight: 34, flexDirection: 'row', alignItems: 'center', gap: 5 },
+  backButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 12 },
   brand: { fontFamily: 'Inter_700Bold', fontSize: 18, letterSpacing: 1 },
   stepText: { fontFamily: 'Inter_500Medium', fontSize: 12 },
   progressTrack: { height: 5, borderRadius: 3, marginTop: 15, overflow: 'hidden' },

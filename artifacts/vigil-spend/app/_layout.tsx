@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -40,7 +40,7 @@ function LaunchScreen() {
     <View style={launchStyles.page}>
       <Animated.View style={[launchStyles.lockup, { opacity, transform: [{ scale }] }]}>
         <Image source={require('@/assets/images/icon-transparent.png')} style={launchStyles.mark} />
-        <Text style={launchStyles.name}>VIGIL</Text>
+        <Text style={launchStyles.name}>Vigil Spend</Text>
         <Text style={launchStyles.tagline}>Know where it all goes.</Text>
       </Animated.View>
     </View>
@@ -52,7 +52,7 @@ function AuthLoadingScreen({ timedOut = false, onRetry }: { timedOut?: boolean; 
     <View style={launchStyles.loadingPage}>
       {timedOut ? (
         <>
-          <Text style={launchStyles.errorTitle}>Vigil is taking too long to connect</Text>
+          <Text style={launchStyles.errorTitle}>Vigil Spend is taking too long to connect</Text>
           <Text style={launchStyles.errorText}>Check your connection, then try again. Your financial data on this device is safe.</Text>
           <Pressable accessibilityRole="button" onPress={onRetry} style={launchStyles.retryButton}>
             <Text style={launchStyles.retryText}>Try again</Text>
@@ -61,7 +61,7 @@ function AuthLoadingScreen({ timedOut = false, onRetry }: { timedOut?: boolean; 
       ) : (
         <>
           <ActivityIndicator size="large" color="#ef3340" />
-          <Text style={launchStyles.loadingText}>Connecting to Vigil…</Text>
+          <Text style={launchStyles.loadingText}>Connecting to Vigil Spend…</Text>
         </>
       )}
     </View>
@@ -69,8 +69,14 @@ function AuthLoadingScreen({ timedOut = false, onRetry }: { timedOut?: boolean; 
 }
 
 function IdentityBootstrap({ onRetry }: { onRetry: () => void }) {
-  const { isLoaded } = useIdentity();
+  const { isLoaded, clerkAvailable } = useIdentity();
   const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (__DEV__) {
+      console.info('[Vigil] identity readiness', { clerkAvailable, isLoaded });
+    }
+  }, [clerkAvailable, isLoaded]);
 
   useEffect(() => {
     if (isLoaded) {
@@ -101,7 +107,7 @@ function IdentityBootstrap({ onRetry }: { onRetry: () => void }) {
 function ConfigurationErrorScreen() {
   return (
     <View style={launchStyles.loadingPage}>
-      <Text style={launchStyles.errorTitle}>Vigil could not start</Text>
+      <Text style={launchStyles.errorTitle}>Vigil Spend could not start</Text>
       <Text style={launchStyles.errorText}>The app’s sign-in configuration is missing. Please install the latest published build.</Text>
     </View>
   );
@@ -118,6 +124,8 @@ function RootLayoutNav() {
       <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       <Stack.Screen name="landing" options={{ headerShown: false }} />
       <Stack.Screen name="admin" options={{ headerShown: false }} />
+      <Stack.Screen name="diagnostics" options={{ headerShown: false }} />
+      <Stack.Screen name="support" options={{ headerShown: false }} />
       <Stack.Screen name="legal" options={{ headerShown: false }} />
     </Stack>
   );
@@ -134,18 +142,22 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    const timeout = setTimeout(() => setShowLaunchScreen(false), Platform.OS === 'web' ? 700 : 2300);
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
-      const timeout = setTimeout(() => setShowLaunchScreen(false), 2300);
-      return () => clearTimeout(timeout);
     }
+    return () => clearTimeout(timeout);
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) return null;
   if (showLaunchScreen) return <LaunchScreen />;
 
   const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  const proxyUrl = process.env.EXPO_PUBLIC_CLERK_PROXY_URL || undefined;
+  // The external Clerk account uses Clerk's frontend API directly. Only an
+  // explicitly enabled legacy proxy should be passed to ClerkProvider.
+  const proxyUrl = Platform.OS === 'web' && process.env.EXPO_PUBLIC_CLERK_USE_PROXY === 'true'
+    ? process.env.EXPO_PUBLIC_CLERK_PROXY_URL || undefined
+    : undefined;
   if (!publishableKey) {
     return (
       <SafeAreaProvider>

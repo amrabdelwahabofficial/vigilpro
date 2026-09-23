@@ -12,9 +12,12 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { getPublicPage } = require('./publicPages');
 
 const STATIC_ROOT = path.resolve(__dirname, '..', 'static-build');
 const TEMPLATE_PATH = path.resolve(__dirname, 'templates', 'landing-page.html');
+const PUBLIC_ROOT = path.resolve(__dirname, 'public');
+const PUBLIC_SITE_URL = 'https://vigilspend.com';
 const basePath = (process.env.BASE_PATH || '/').replace(/\/+$/, '');
 
 const MIME_TYPES = {
@@ -33,6 +36,8 @@ const MIME_TYPES = {
   '.ttf': 'font/ttf',
   '.otf': 'font/otf',
   '.map': 'application/json',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
 };
 
 function getAppName() {
@@ -84,10 +89,8 @@ function serveManifest(platform, res) {
 }
 
 function serveLandingPage(req, res, landingPageTemplate, appName) {
-  const forwardedProto = req.headers['x-forwarded-proto'];
-  const protocol = forwardedProto || 'https';
   const host = req.headers['x-forwarded-host'] || req.headers['host'];
-  const baseUrl = `${protocol}://${host}`;
+  const baseUrl = PUBLIC_SITE_URL;
   const expsUrl = `exps://${host}${basePath}`;
 
   const html = landingPageTemplate
@@ -97,6 +100,33 @@ function serveLandingPage(req, res, landingPageTemplate, appName) {
     .replace(/APP_NAME_PLACEHOLDER/g, escapeHtml(appName));
 
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+function servePublicFile(filename, res) {
+  const filePath = path.join(PUBLIC_ROOT, filename);
+
+  if (!filePath.startsWith(PUBLIC_ROOT) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+    res.writeHead(404);
+    res.end('Not Found');
+    return;
+  }
+
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  const content = fs.readFileSync(filePath);
+  res.writeHead(200, {
+    'cache-control': 'public, max-age=3600',
+    'content-type': contentType,
+  });
+  res.end(content);
+}
+
+function servePublicPage(html, res) {
+  res.writeHead(200, {
+    'cache-control': 'public, max-age=300',
+    'content-type': 'text/html; charset=utf-8',
+  });
   res.end(html);
 }
 
@@ -143,6 +173,15 @@ const server = http.createServer((req, res) => {
     if (pathname === '/') {
       return serveLandingPage(req, res, landingPageTemplate, appName);
     }
+  }
+
+  if (pathname === '/robots.txt' || pathname === '/sitemap.xml' || pathname === '/og-image.png' || pathname === '/og-image.svg' || pathname === '/favicon.svg' || pathname === '/apple-touch-icon.png') {
+    return servePublicFile(pathname.slice(1), res);
+  }
+
+  const publicPage = getPublicPage(pathname);
+  if (publicPage) {
+    return servePublicPage(publicPage, res);
   }
 
   serveStaticFile(pathname, res);

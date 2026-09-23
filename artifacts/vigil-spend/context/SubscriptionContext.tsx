@@ -1,15 +1,19 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import Purchases, { CustomerInfo, LOG_LEVEL, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import RevenueCatUI from 'react-native-purchases-ui';
 import { useIdentity } from '@/context/IdentityContext';
 import {
   hasVigilProEntitlement,
   createSerializedTaskQueue,
+  isIntroductoryOfferEligible,
   packageForPlan,
   PlanKind,
+  PRODUCT_IDENTIFIERS,
   purchaseWasCancelled,
 } from '@/lib/subscription';
+import { recordRevenueCatDiagnostic, revenueCatErrorDetails } from '@/lib/authDiagnostics';
 
 export type PurchaseOutcome = 'purchased' | 'cancelled' | 'not_active';
 export type SubscriptionError = 'configuration' | 'identity' | 'catalog' | null;
@@ -21,8 +25,10 @@ type SubscriptionContextValue = {
   offering: PurchasesOffering | null;
   monthlyPackage: PurchasesPackage | null;
   yearlyPackage: PurchasesPackage | null;
+  yearlyTrialEligible: boolean;
   isPro: boolean;
   customerInfo: CustomerInfo | null;
+  loadedProductIds: string[];
   purchase: (plan: PlanKind) => Promise<PurchaseOutcome>;
   restore: () => Promise<boolean>;
   // Kept for the identity flow. UI sign-out relies on the identity transition
@@ -30,7 +36,6 @@ type SubscriptionContextValue = {
   logOutCustomer: () => Promise<void>;
   refresh: () => Promise<void>;
   retry: () => Promise<void>;
-  presentRevenueCatPaywall: () => Promise<void>;
   presentCustomerCenter: () => Promise<void>;
 };
 
@@ -38,8 +43,10 @@ type RevenueCatSnapshot = {
   configured: boolean;
   offering: PurchasesOffering | null;
   customerInfo: CustomerInfo | null;
+  yearlyTrialEligible: boolean;
   identityError: boolean;
   catalogError: boolean;
+  loadedProductIds: string[];
 };
 
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null);
@@ -47,48 +54,20 @@ const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)
 let configuredRevenueCatKey: string | null = null;
 let synchronizedRevenueCatUserId: string | null = null;
 const enqueueRevenueCat = createSerializedTaskQueue();
-
 function revenueCatKey() {
-  // Expo Go/Preview API Mode should use the new account's Test Store key.
-  // A Test Store key must not be embedded in a production TestFlight build.
-  if (__DEV__ && process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY) {
+  // Expo Go and web Preview API Mode use the Test Store key. Native
+  // development builds still talk to StoreKit, so they must use the iOS App
+  // Store key even when __DEV__ is true. This also prevents a stale Test Store
+  // key from breaking native development builds with "Invalid API Key".
+  const isExpoGo = Constants.appOwnership === 'expo';
+  if ((Platform.OS === 'web' || isExpoGo) && process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY) {
     return process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY;
   }
   if (Platform.OS === 'ios') return process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
-  if (Platform.OS === 'android') return process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY;
+  // No verified Google Play public key is configured. Never consume a stale
+  // or Test Store key in an Android native build.
+  if (Platform.OS === 'android') return undefined;
   return process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY;
-}
-
-function revenueCatKeySource() {
-  if (__DEV__ && process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY) return 'test-store';
-  if (Platform.OS === 'ios') return 'ios-app-store';
-  if (Platform.OS === 'android') return 'android-app-store';
-  return 'test-store';
-}
-
-function revenueCatErrorDetails(error: unknown) {
-  if (!error || typeof error !== 'object') {
-    return { name: null, message: String(error), code: null, readableErrorCode: null, underlyingErrorMessage: null };
-  }
-
-  const candidate = error as {
-    name?: unknown;
-    message?: unknown;
-    code?: unknown;
-    readableErrorCode?: unknown;
-    underlyingErrorMessage?: unknown;
-  };
-  const value = (input: unknown): string | number | null => (
-    typeof input === 'string' || typeof input === 'number' ? input : null
-  );
-
-  return {
-    name: value(candidate.name) ?? (error as { constructor?: { name?: string } }).constructor?.name ?? null,
-    message: value(candidate.message),
-    code: value(candidate.code),
-    readableErrorCode: value(candidate.readableErrorCode),
-    underlyingErrorMessage: value(candidate.underlyingErrorMessage),
-  };
 }
 
 async function configurePurchasesInQueue(key: string) {
@@ -96,30 +75,61 @@ async function configurePurchasesInQueue(key: string) {
   const alreadyConfigured = configuredRevenueCatKey === key || await Purchases.isConfigured();
   if (!alreadyConfigured) Purchases.configure({ apiKey: key });
   configuredRevenueCatKey = key;
+  void recordRevenueCatDiagnostic('startup', 'configure', 'success', {
+    configured: 'true',
+    customerMode: 'unknown',
+  });
 }
 
-async function synchronizeCustomerInQueue(userId: string | null): Promise<CustomerInfo> {
-  if (userId) {
-    const isAnonymous = await Purchases.isAnonymous();
-    const currentAppUserId = await Purchases.getAppUserID();
-    if (currentAppUserId !== userId || isAnonymous) {
-      const result = await Purchases.logIn(userId);
-      synchronizedRevenueCatUserId = userId;
-      return result.customerInfo;
-    }
-    synchronizedRevenueCatUserId = userId;
-    return Purchases.getCustomerInfo();
-  }
+async function synchronizeCustomerInQueue(
+  userId: string | null,
+  requireCustomerInfo = true,
+): Promise<CustomerInfo | null> {
+  try {
+    const info = await (async () => {
+      if (userId) {
+        const isAnonymous = await Purchases.isAnonymous();
+        const currentAppUserId = await Purchases.getAppUserID();
+        if (currentAppUserId !== userId || isAnonymous) {
+          const result = await Purchases.logIn(userId);
+          synchronizedRevenueCatUserId = userId;
+          return result.customerInfo;
+        }
+        synchronizedRevenueCatUserId = userId;
+        if (!requireCustomerInfo) {
+          return null;
+        }
+        return await Purchases.getCustomerInfo();
+      }
 
-  // Initial SDK configuration creates an anonymous customer. Logging it out is
-  // unnecessary and can reject, which used to prevent the first catalog load.
-  if (await Purchases.isAnonymous()) {
-    synchronizedRevenueCatUserId = null;
-    return Purchases.getCustomerInfo();
+      // Initial SDK configuration creates an anonymous customer. Logging it out is
+      // unnecessary and can reject, which used to prevent the first catalog load.
+      if (await Purchases.isAnonymous()) {
+        synchronizedRevenueCatUserId = null;
+        return await Purchases.getCustomerInfo();
+      }
+      const result = await Purchases.logOut();
+      synchronizedRevenueCatUserId = null;
+      return result;
+    })();
+    void recordRevenueCatDiagnostic('startup', 'customer-synchronization', 'success', {
+      configured: 'true',
+      customerMode: userId ? 'identified' : 'anonymous',
+      productIds: info?.activeSubscriptions ?? [],
+      message: info
+        ? `active entitlement=${hasVigilProEntitlement(info) ? 'true' : 'false'}`
+        : 'customer identity selected',
+    });
+    return info;
+  } catch (error) {
+      const details = revenueCatErrorDetails(error);
+      void recordRevenueCatDiagnostic('startup', 'customer-synchronization', 'error', {
+        ...details,
+        customerMode: userId ? 'identified' : 'anonymous',
+      });
+    console.error('[RevenueCat] customer synchronization failed', { platform: Platform.OS });
+    throw error;
   }
-  const info = await Purchases.logOut();
-  synchronizedRevenueCatUserId = null;
-  return info;
 }
 
 async function loadSnapshot(key: string, userId: string | null): Promise<RevenueCatSnapshot> {
@@ -136,17 +146,15 @@ async function loadSnapshot(key: string, userId: string | null): Promise<Revenue
 
     let offering: PurchasesOffering | null = null;
     let catalogError = false;
-    const requestContext = {
-      platform: Platform.OS,
-      buildMode: __DEV__ ? 'development' : 'release',
-      keySource: revenueCatKeySource(),
-      customerMode: userId ? 'identified' : 'anonymous',
-    };
+    let yearlyTrialEligible = false;
+    let loadedProductIds: string[] = [];
+    const requestContext = { platform: Platform.OS, customerMode: userId ? 'identified' : 'anonymous' };
     try {
       // Never substitute a non-current offering. It may be intentionally
       // unpublished or targeted to a different customer.
       const offerings = await Purchases.getOfferings();
       offering = offerings.current ?? null;
+      loadedProductIds = offering?.availablePackages.map((pkg) => pkg.product.identifier) ?? [];
       const packageSummary = offering?.availablePackages.map((pkg) => ({
         packageIdentifier: pkg.identifier,
         productIdentifier: pkg.product.identifier,
@@ -157,19 +165,47 @@ async function loadSnapshot(key: string, userId: string | null): Promise<Revenue
         packageSummary,
         allOfferingIdentifiers: Object.keys(offerings.all ?? {}),
       });
+      void recordRevenueCatDiagnostic('startup', 'offerings', offering ? 'success' : 'state', {
+        configured: 'true',
+        customerMode: userId ? 'identified' : 'anonymous',
+        offeringId: offering?.identifier ?? '',
+        productIds: loadedProductIds,
+      });
       if (!offering) {
         catalogError = true;
         console.warn('[RevenueCat] getOfferings returned no current offering', requestContext);
       }
     } catch (error) {
       catalogError = true;
-      console.error('[RevenueCat] getOfferings failed', {
-        ...requestContext,
-        error: revenueCatErrorDetails(error),
+      const details = revenueCatErrorDetails(error);
+      void recordRevenueCatDiagnostic('startup', 'offerings', 'error', {
+        ...details,
+        configured: 'true',
+        customerMode: userId ? 'identified' : 'anonymous',
       });
+      console.error('[RevenueCat] getOfferings failed', requestContext);
     }
 
-    return { configured: true, offering, customerInfo, identityError, catalogError };
+    if (!identityError && offering && Platform.OS === 'ios') {
+      const yearlyPackage = packageForPlan(offering, 'yearly');
+      if (yearlyPackage) {
+        try {
+          const eligibility = await Purchases.checkTrialOrIntroductoryPriceEligibility([
+            yearlyPackage.product.identifier || PRODUCT_IDENTIFIERS.yearly,
+          ]);
+          yearlyTrialEligible = isIntroductoryOfferEligible(
+            eligibility[yearlyPackage.product.identifier]?.status,
+            Purchases.INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE,
+          );
+        } catch (error) {
+          // Unknown eligibility is intentionally rendered as a normal annual
+          // purchase rather than promising a trial StoreKit may reject.
+            console.warn('[RevenueCat] yearly introductory eligibility unavailable', requestContext);
+        }
+      }
+    }
+
+    return { configured: true, offering, customerInfo, yearlyTrialEligible, identityError, catalogError, loadedProductIds };
   });
 }
 
@@ -186,15 +222,21 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [error, setError] = useState<SubscriptionError>(null);
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
-
+  const [loadedProductIds, setLoadedProductIds] = useState<string[]>([]);
+  const [yearlyTrialEligible, setYearlyTrialEligible] = useState(false);
   const refresh = useCallback(async () => {
     if (!identityLoaded) return;
     const key = revenueCatKey();
     const request = identityState.current;
     if (!key) {
+      void recordRevenueCatDiagnostic('startup', 'configuration', 'error', {
+        configured: 'false',
+        message: 'No RevenueCat API key is configured for this build.',
+      });
       if (identityState.current.revision === request.revision) {
         setConfigured(false);
         setOffering(null);
+        setLoadedProductIds([]);
         setError('configuration');
         setLoading(false);
       }
@@ -212,11 +254,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       // A targeted offering can vary by customer. Never publish an offering
       // read while the requested account could not be synchronized.
       setOffering(snapshot.identityError ? null : snapshot.offering);
+      setLoadedProductIds(snapshot.loadedProductIds);
+      setYearlyTrialEligible(snapshot.identityError ? false : snapshot.yearlyTrialEligible);
       // Preserve the same customer's last known entitlement during a
       // transient CustomerInfo failure. A new identity is cleared below.
       if (!snapshot.identityError && snapshot.customerInfo) setCustomerInfo(snapshot.customerInfo);
       setError(snapshot.identityError ? 'identity' : snapshot.catalogError ? 'catalog' : null);
     } catch {
+      void recordRevenueCatDiagnostic('startup', 'snapshot', 'error', {
+        configured: 'false',
+        message: 'RevenueCat snapshot could not be loaded.',
+      });
       if (identityState.current.revision === request.revision) {
         setConfigured(false);
         setOffering(null);
@@ -236,6 +284,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     // Clear A's entitlement before starting B's serialized SDK transition.
     setCustomerInfo(null);
     setOffering(null);
+    setLoadedProductIds([]);
+    setYearlyTrialEligible(false);
     void refresh();
   }, [activeUserId, identityLoaded, refresh]);
 
@@ -264,16 +314,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     offering,
     monthlyPackage,
     yearlyPackage,
+    yearlyTrialEligible,
     customerInfo,
+    loadedProductIds,
     isPro,
     refresh,
     retry,
-    presentRevenueCatPaywall: async () => {
-      if (!configured) throw new Error('Subscription services are not ready on this device.');
-      if (!offering) throw new Error('No subscription offering is available right now. Please retry.');
-      await RevenueCatUI.presentPaywall({ offering });
-      await refresh();
-    },
     presentCustomerCenter: async () => {
       if (!configured) throw new Error('Apple subscription services are not ready on this device.');
       await RevenueCatUI.presentCustomerCenter();
@@ -287,23 +333,50 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       return enqueueRevenueCat(async () => {
         await configurePurchasesInQueue(key);
         try {
-          await synchronizeCustomerInQueue(request.userId);
-        } catch {
-          throw new Error('Your subscription account could not be synchronized. Please retry before purchasing.');
+          // A purchase only needs the RevenueCat customer identity selected.
+          // Requiring a successful CustomerInfo/receipt read here can block a
+          // first purchase during a transient network or StoreKit refresh.
+          await synchronizeCustomerInQueue(request.userId, false);
+        } catch (syncError) {
+          const wrappedError = new Error('Your subscription account could not be synchronized. Please retry before purchasing.') as Error & { cause?: unknown };
+          wrappedError.cause = syncError;
+          throw wrappedError;
         }
         if (identityState.current.revision !== request.revision) {
           throw new Error('Your account changed. Please retry before purchasing.');
         }
-        const currentOffering = (await Purchases.getOfferings()).current ?? null;
+        let currentOfferingResult;
+        try {
+          currentOfferingResult = await Purchases.getOfferings();
+        } catch (error) {
+          throw error;
+        }
+        const currentOffering = currentOfferingResult.current ?? null;
+        const currentProductIds = currentOffering?.availablePackages.map((pkg) => pkg.product.identifier) ?? [];
+        setLoadedProductIds(currentProductIds);
         const selectedPackage = packageForPlan(currentOffering, plan);
-        if (!selectedPackage) throw new Error(`The ${plan} plan is not available right now. Please try again later.`);
+        if (!selectedPackage) {
+          const catalogError = new Error(`The ${plan} plan is not available right now. Please try again later.`);
+          throw catalogError;
+        }
         try {
           const result = await Purchases.purchasePackage(selectedPackage);
           if (identityState.current.revision !== request.revision) return 'not_active';
           setCustomerInfo(result.customerInfo);
+           void recordRevenueCatDiagnostic('purchase', 'purchase-package', 'success', {
+             configured: 'true',
+             customerMode: 'identified',
+             productIds: [selectedPackage.product.identifier],
+           });
           return hasVigilProEntitlement(result.customerInfo) ? 'purchased' : 'not_active';
         } catch (purchaseError) {
           if (purchaseWasCancelled(purchaseError)) return 'cancelled';
+           void recordRevenueCatDiagnostic('purchase', 'purchase-package', 'error', {
+             ...revenueCatErrorDetails(purchaseError),
+             configured: 'true',
+             customerMode: 'identified',
+             productIds: [selectedPackage.product.identifier],
+           });
           throw purchaseError;
         }
       });
@@ -317,9 +390,13 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       return enqueueRevenueCat(async () => {
         await configurePurchasesInQueue(key);
         try {
-          await synchronizeCustomerInQueue(request.userId);
-        } catch {
-          throw new Error('Your subscription account could not be synchronized. Please retry before restoring purchases.');
+          // Restore also needs the correct RevenueCat identity, not a
+          // successful pre-existing receipt/customer-info fetch.
+           await synchronizeCustomerInQueue(request.userId, false);
+        } catch (syncError) {
+          const wrappedError = new Error('Your subscription account could not be synchronized. Please retry before restoring purchases.') as Error & { cause?: unknown };
+          wrappedError.cause = syncError;
+          throw wrappedError;
         }
         if (identityState.current.revision !== request.revision) {
           throw new Error('Your account changed. Please retry before restoring purchases.');
@@ -328,9 +405,18 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           const info = await Purchases.restorePurchases();
           if (identityState.current.revision !== request.revision) return false;
           setCustomerInfo(info);
+           void recordRevenueCatDiagnostic('restore', 'restore-purchases', 'success', {
+             configured: 'true',
+             customerMode: 'identified',
+           });
           return hasVigilProEntitlement(info);
         } catch (restoreError) {
           if (purchaseWasCancelled(restoreError)) return false;
+           void recordRevenueCatDiagnostic('restore', 'restore-purchases', 'error', {
+             ...revenueCatErrorDetails(restoreError),
+             configured: 'true',
+             customerMode: 'identified',
+           });
           throw restoreError;
         }
       });
@@ -346,7 +432,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         synchronizedRevenueCatUserId = null;
       });
     },
-  }), [configured, customerInfo, error, isAdmin, isPro, loading, monthlyPackage, offering, proOverride, refresh, retry, yearlyPackage]);
+  }), [configured, customerInfo, error, isAdmin, isPro, loadedProductIds, loading, monthlyPackage, offering, proOverride, refresh, retry, yearlyPackage, yearlyTrialEligible]);
 
   return <SubscriptionContext.Provider value={value}>{children}</SubscriptionContext.Provider>;
 }

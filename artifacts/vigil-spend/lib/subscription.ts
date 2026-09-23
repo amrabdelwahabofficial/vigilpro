@@ -1,10 +1,12 @@
 export type PlanKind = 'monthly' | 'yearly';
 
-export const VIGIL_PRO_ENTITLEMENT = 'vigil_unlimited';
+// This is the live RevenueCat entitlement lookup key. Keep the older keys
+// below so customers from earlier catalog versions retain access.
+export const VIGIL_PRO_ENTITLEMENT = 'vigil_pro_unlimited';
 
 // These entitlement aliases are intentionally retained for people who bought
 // before the current entitlement name was introduced.
-export const LEGACY_VIGIL_PRO_ENTITLEMENTS = ['vigil_pro_unlimited', 'vigil_know_where_it_all_goes_pro', 'vigil_pro', 'pro'] as const;
+export const LEGACY_VIGIL_PRO_ENTITLEMENTS = ['vigil_unlimited', 'vigil_know_where_it_all_goes_pro', 'vigil_pro', 'pro'] as const;
 
 export const PRODUCT_IDENTIFIERS: Record<PlanKind, string> = {
   monthly: 'vigil_unlimited_monthly',
@@ -75,6 +77,14 @@ export function purchaseWasCancelled(error: unknown) {
     userCanceled?: unknown;
   };
   return candidate.userCancelled === true || candidate.userCanceled === true;
+}
+
+/**
+ * Keep the status comparison in one place so callers can pass the SDK's
+ * named eligible constant. Unknown and no-offer statuses remain ineligible.
+ */
+export function isIntroductoryOfferEligible(status: unknown, eligibleStatus: unknown) {
+  return status === eligibleStatus;
 }
 
 /**

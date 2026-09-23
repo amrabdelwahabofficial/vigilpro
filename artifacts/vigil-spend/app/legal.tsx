@@ -23,7 +23,7 @@ export function LegalContent({ document, onClose }: { document: LegalDocument; o
         <Text style={[styles.headerTitle, { color: palette.foreground }]}>{content.title}</Text>
       </View>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 30, 44) }]}>
-         <Text style={[styles.body, { color: palette.secondaryForeground }]}>{content.body.replace(/\bClerk\b/g, 'Vigil')}</Text>
+         <Text style={[styles.body, { color: palette.secondaryForeground }]}>{content.body.replace(/\bClerk\b/g, 'Vigil Spend')}</Text>
         {document === 'use' && <Pressable onPress={() => void Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')} style={[styles.link, { borderColor: palette.border, backgroundColor: palette.card }]}><Text style={[styles.linkText, { color: palette.primary }]}>Apple EULA</Text><Ionicons name="open-outline" size={18} color={palette.primary} /></Pressable>}
         <Pressable onPress={() => void Linking.openURL('mailto:support@vigilspend.com')} style={[styles.link, { borderColor: palette.border, backgroundColor: palette.card }]}><Text style={[styles.linkText, { color: palette.primary }]}>support@vigilspend.com</Text><Ionicons name="mail-outline" size={18} color={palette.primary} /></Pressable>
       </ScrollView>

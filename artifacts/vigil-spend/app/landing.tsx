@@ -2,27 +2,16 @@ import React from 'react';
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useIdentity } from '@/context/IdentityContext';
-
-const features = [
-  {
-    icon: '01',
-    title: 'Capture spending quickly',
-    copy: 'Log a purchase, receipt, voice note, or bank message before it gets lost in the month.',
-  },
-  {
-    icon: '02',
-    title: 'See what is still available',
-    copy: 'Simple buckets show where your money is going and what each decision leaves behind.',
-  },
-  {
-    icon: '03',
-    title: 'Plan without the guilt',
-    copy: 'Vigil turns money pressure into a clear next step, with deeper insights when you want them.',
-  },
-];
+import { useVigil } from '@/context/AppContext';
 
 export default function LandingScreen() {
   const { isLoaded, isSignedIn } = useIdentity();
+  const { t } = useVigil();
+  const features = [
+    { icon: '01', title: t('landingFeature1Title'), copy: t('landingFeature1Copy') },
+    { icon: '02', title: t('landingFeature2Title'), copy: t('landingFeature2Copy') },
+    { icon: '03', title: t('landingFeature3Title'), copy: t('landingFeature3Copy') },
+  ];
 
   const openApp = () => {
     router.push(isLoaded && isSignedIn ? '/' : '/sign-in');
@@ -35,23 +24,21 @@ export default function LandingScreen() {
           <View style={styles.logoFrame}>
             <Image source={require('@/assets/images/icon-transparent.png')} style={styles.logo} resizeMode="contain" />
           </View>
-          <Text style={styles.brandName}>VIGIL</Text>
+          <Text style={styles.brandName}>Vigil Spend</Text>
         </View>
         <Pressable onPress={openApp} style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}>
-          <Text style={styles.headerButtonText}>{isLoaded && isSignedIn ? 'Open app' : 'Sign in'}</Text>
+          <Text style={styles.headerButtonText}>{isLoaded && isSignedIn ? t('openApp') : t('signIn')}</Text>
         </Pressable>
       </View>
 
       <View style={styles.hero}>
-        <Text style={styles.eyebrow}>KNOW WHERE IT ALL GOES</Text>
-        <Text style={styles.title}>Awareness is the first step to real change.</Text>
-        <Text style={styles.heroCopy}>
-          Vigil helps you notice spending, protect what matters, and make the next money decision consciously.
-        </Text>
+        <Text style={styles.eyebrow}>{t('landingEyebrow')}</Text>
+        <Text style={styles.title}>{t('landingTitle')}</Text>
+        <Text style={styles.heroCopy}>{t('landingCopy')}</Text>
         <Pressable onPress={openApp} style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}>
-          <Text style={styles.primaryButtonText}>{isLoaded && isSignedIn ? 'Open Vigil' : 'Get started'}</Text>
+          <Text style={styles.primaryButtonText}>{isLoaded && isSignedIn ? t('openVigil') : t('getStarted')}</Text>
         </Pressable>
-        <Text style={styles.disclaimer}>Free to start. Your financial data stays on your device.</Text>
+        <Text style={styles.disclaimer}>{t('landingDisclaimer')}</Text>
       </View>
 
       <View style={styles.featureGrid}>
@@ -65,9 +52,9 @@ export default function LandingScreen() {
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerBrand}>VIGIL</Text>
-        <Text style={styles.footerCopy}>A clearer relationship with the money you already have.</Text>
-        <Pressable onPress={() => router.push('/legal')}><Text style={styles.footerLink}>Privacy and terms</Text></Pressable>
+        <Text style={styles.footerBrand}>Vigil Spend</Text>
+        <Text style={styles.footerCopy}>{t('landingFooterCopy')}</Text>
+        <Pressable onPress={() => router.push('/legal')}><Text style={styles.footerLink}>{t('privacyAndTerms')}</Text></Pressable>
       </View>
     </ScrollView>
   );

@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { Feather } from '@expo/vector-icons';
 import { reloadAppAsync } from 'expo';
+import { useVigil } from '@/context/AppContext';
 
 export type ErrorFallbackProps = {
   error: Error;
@@ -20,6 +21,7 @@ export type ErrorFallbackProps = {
 
 export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   const colors = useColors();
+  const { t } = useVigil();
   const insets = useSafeAreaInsets();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -52,7 +54,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
       {__DEV__ ? (
         <Pressable
           onPress={() => setIsModalVisible(true)}
-          accessibilityLabel="View error details"
+          accessibilityLabel={t('viewErrorDetails')}
           accessibilityRole="button"
           style={({ pressed }) => [
             styles.topButton,
@@ -120,7 +122,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                 </Text>
                 <Pressable
                   onPress={() => setIsModalVisible(false)}
-                  accessibilityLabel="Close error details"
+                  accessibilityLabel={t('closeErrorDetails')}
                   accessibilityRole="button"
                   style={({ pressed }) => [
                     styles.closeButton,

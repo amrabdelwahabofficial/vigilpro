@@ -5,7 +5,6 @@ import * as Haptics from 'expo-haptics';
 import { useVigil } from '@/context/AppContext';
 import type { PurchasesPackage } from 'react-native-purchases';
 import { LegalContent, LegalDocument } from '@/app/legal';
-import { fallbackPriceForPlan } from '@/lib/subscription';
 
 export type Plan = 'yearly' | 'monthly';
 
@@ -19,6 +18,7 @@ export interface PaywallProps {
   onRetry?: () => void;
   yearlyPackage: PurchasesPackage | null;
   monthlyPackage: PurchasesPackage | null;
+  yearlyTrialEligible: boolean;
   loading: boolean;
   purchasing: boolean;
   restoring: boolean;
@@ -36,6 +36,7 @@ export function PaywallContent({
   onRetry,
   yearlyPackage,
   monthlyPackage,
+  yearlyTrialEligible,
   loading,
   purchasing,
   restoring,
@@ -46,17 +47,19 @@ export function PaywallContent({
   const [legalDoc, setLegalDoc] = useState<LegalDocument | null>(null);
   
   const selectedPackage = selectedPlan === 'yearly' ? yearlyPackage : monthlyPackage;
-   // Keep the CTA actionable once billing is configured. If the catalog is
-   // temporarily unavailable, the purchase call returns a clear retryable
-   // error instead of leaving the user with a dead, grey button.
-   const canAttemptPurchase = configured && !loading;
-  const monthlyPrice = monthlyPackage?.product.priceString || fallbackPriceForPlan('monthly');
-  const yearlyPrice = yearlyPackage?.product.priceString || fallbackPriceForPlan('yearly');
-   // App Store Connect confirms a 7-day introductory offer for the yearly
-   // product. Apple still decides eligibility and presents the final billing
-   // terms at checkout for each Apple ID.
-   const yearlyHasTrial = true;
-
+  // A configured SDK is not enough to purchase. Require the selected package
+  // so the CTA can never show a fallback price while the store catalog is
+  // missing or still loading.
+  const canAttemptPurchase = configured && !loading && Boolean(selectedPackage);
+  const monthlyPrice = monthlyPackage?.product.priceString ?? '';
+  const yearlyPrice = yearlyPackage?.product.priceString ?? '';
+  const yearlyTrial = selectedPlan === 'yearly' && yearlyTrialEligible && Boolean(yearlyPackage);
+  const selectedPrice = selectedPackage?.product.priceString ?? '';
+  const purchaseCta = yearlyTrial
+    ? t('trialStart')
+    : selectedPackage
+      ? t('payPlanToday').replace('{price}', selectedPrice)
+      : t('planUnavailable');
   const disableActions = purchasing || restoring;
 
   return (
@@ -65,7 +68,7 @@ export function PaywallContent({
         {/* 1. Top section */}
         <View style={styles.topSection}>
           {onClose && (
-            <Pressable onPress={onClose} style={styles.closeBtn} accessibilityLabel="Back">
+            <Pressable onPress={onClose} style={styles.closeBtn} accessibilityLabel={t('back')}>
                <Ionicons name="chevron-back" size={28} color={palette.foreground} />
             </Pressable>
           )}
@@ -95,7 +98,7 @@ export function PaywallContent({
               onSelect={() => onSelectPlan('yearly')}
               pkg={yearlyPackage}
               title={t('premiumYearly')}
-                details={yearlyHasTrial ? t('annualTrialDetails') : t('annualPlanDetails')}
+                details={yearlyTrialEligible ? t('annualTrialDetails') : t('annualPlanDetails')}
                price={yearlyPrice}
               loading={loading}
               palette={palette}
@@ -138,19 +141,19 @@ export function PaywallContent({
             <ActivityIndicator color={palette.primaryForeground} />
           ) : (
             <Text style={[styles.primaryText, { color: palette.primaryForeground }]}>
-              {isPro ? t('proActive') : t(selectedPlan === 'yearly' && yearlyHasTrial ? 'startFreeTrial' : selectedPlan === 'yearly' ? 'annualSubscribe' : 'subscribeMonthly')}
+              {isPro ? t('proActive') : purchaseCta}
             </Text>
           )}
         </Pressable>
 
         {onContinueBasic && (
-           <Pressable testID="continue-basic" onPress={onContinueBasic} style={styles.textButton} accessibilityLabel="Back">
+           <Pressable testID="continue-basic" onPress={onContinueBasic} style={styles.textButton} accessibilityLabel={t('back')}>
               <Text style={[styles.textButtonLabel, { color: palette.foreground }]}>{t('continueBasic')}</Text>
            </Pressable>
         )}
         <Text style={[styles.finePrint, { color: palette.mutedForeground }]}>
           {selectedPackage
-            ? t(selectedPlan === 'yearly' && yearlyHasTrial ? 'annualTrialFinePrint' : selectedPlan === 'yearly' ? 'annualFinePrint' : 'monthlyFinePrint')
+             ? t(selectedPlan === 'yearly' && yearlyTrialEligible ? 'annualTrialFinePrint' : selectedPlan === 'yearly' ? 'annualFinePrint' : 'monthlyFinePrint')
               .replaceAll('{price}', selectedPlan === 'yearly' ? yearlyPrice : monthlyPrice)
             : t('plansUnavailableCopy')}
         </Text>
@@ -218,7 +221,7 @@ function PlanCard({ plan, selected, onSelect, pkg, title, details, price, loadin
           <Text style={[styles.planTrial, { color: palette.mutedForeground }]}>
              {loading ? t('loadingPlan') : available ? details : t('plansUnavailableCopy')}
           </Text>
-          {!loading && <Text style={[styles.planPrice, { color: palette.foreground }]}>{livePrice || price}</Text>}
+           {!loading && available && <Text style={[styles.planPrice, { color: palette.foreground }]}>{livePrice || price}</Text>}
       </View>
       {bestValue && (
         <View style={[styles.bestBadge, { backgroundColor: palette.primary }]}>
@@ -321,6 +324,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: { minHeight: 56, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   primaryText: { fontFamily: 'Inter_700Bold', fontSize: 16 },
+  trialCharge: { fontFamily: 'Inter_700Bold', fontSize: 14, textAlign: 'center', marginBottom: 9 },
   textButton: { alignItems: 'center', paddingVertical: 14, marginTop: 4 },
   textButtonLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 15 },
   finePrint: { fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 15, textAlign: 'center', marginTop: 8 },

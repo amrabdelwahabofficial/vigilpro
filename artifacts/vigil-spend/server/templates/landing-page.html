@@ -1,212 +1,546 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>APP_NAME_PLACEHOLDER — Know where it all goes</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Vigil helps you notice spending, protect what matters, and make the next money decision consciously." />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='180' height='180' rx='42' fill='%23ef3340'/%3E%3Cpath d='M48 48l42 84 42-84-18 0-24 48-24-48z' fill='white'/%3E%3C/svg%3E" />
+    <title>Vigil Spend — Spending Tracker &amp; Budget Planner</title>
+    <meta name="description" content="Track your spending, understand where your money goes, plan your budget, and capture expenses with Vigil Spend using manual entry, receipts and voice." />
+    <meta name="application-name" content="Vigil Spend" />
+    <meta name="apple-itunes-app" content="app-id=6811090049" />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="BASE_URL_PLACEHOLDER" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Vigil Spend" />
+    <meta property="og:url" content="BASE_URL_PLACEHOLDER" />
+    <meta property="og:title" content="Vigil Spend — Know Where It All Goes" />
+    <meta property="og:description" content="A quieter way to notice spending, see what remains, and choose your next money move." />
+    <meta property="og:image" content="https://vigilspend.com/og-image.png" />
+    <meta property="og:image:secure_url" content="https://vigilspend.com/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Vigil Spend — Know Where It All Goes" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Vigil Spend — Know Where It All Goes" />
+    <meta name="twitter:description" content="A quieter way to notice spending, see what remains, and choose your next money move." />
+    <meta name="twitter:image" content="https://vigilspend.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Vigil Spend — Know Where It All Goes" />
+    <meta name="theme-color" content="#f7f4f1" />
+    <link rel="icon" type="image/svg+xml" href="https://vigilspend.com/favicon.svg" />
+    <link rel="apple-touch-icon" href="https://vigilspend.com/apple-touch-icon.png" />
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap");
+
       :root {
         color-scheme: light;
         --red: #ef3340;
-        --ink: #17181c;
-        --muted: #666871;
-        --line: #eee6e4;
-        --paper: #fffaf9;
-        --white: #ffffff;
+        --red-deep: #d82a37;
+        --ink: #202125;
+        --ink-soft: #41434a;
+        --muted: #76757a;
+        --paper: #f7f4f1;
+        --paper-warm: #f0ebe7;
+        --card: #fffdfb;
+        --line: #e3ded9;
+        --green: #47675a;
+        --serif: "Fraunces", Georgia, serif;
+        --sans: "Manrope", ui-sans-serif, sans-serif;
+        --mono: "DM Mono", ui-monospace, monospace;
       }
+
       * { box-sizing: border-box; }
       html { scroll-behavior: smooth; }
       body {
         margin: 0;
         background: var(--paper);
         color: var(--ink);
-        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        z-index: 20;
+        inset: 0;
+        pointer-events: none;
+        opacity: .25;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");
+        mix-blend-mode: multiply;
       }
       a { color: inherit; }
-      .shell { min-height: 100vh; overflow: hidden; }
-      header {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 24px 28px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-      .brand-mark {
-        width: 34px;
-        height: 34px;
-        border-radius: 11px;
-        display: grid;
-        place-items: center;
-        background: var(--red);
-        color: var(--white);
-        font-size: 21px;
-        font-weight: 800;
-        line-height: 1;
-      }
-      .brand-name { font-size: 18px; font-weight: 800; letter-spacing: 3px; }
-      .header-link {
-        padding: 10px 16px;
-        border: 1px solid #e4dedd;
-        border-radius: 999px;
-        color: var(--ink);
-        font-size: 13px;
-        font-weight: 650;
-        text-decoration: none;
-      }
-      .hero {
-        max-width: 850px;
-        margin: 0 auto;
-        padding: 88px 28px 92px;
-        text-align: center;
-      }
+      .page { overflow: hidden; }
+      .container { width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
       .eyebrow {
-        color: var(--red);
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: 1.8px;
-      }
-      h1 {
-        max-width: 760px;
-        margin: 18px auto 0;
-        font-size: clamp(42px, 7vw, 68px);
-        line-height: 1.03;
-        letter-spacing: -2.5px;
-      }
-      .hero-copy {
-        max-width: 610px;
-        margin: 24px auto 0;
-        color: var(--muted);
-        font-size: 18px;
-        line-height: 1.55;
-      }
-      .actions { margin-top: 32px; display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; }
-      .button {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        min-height: 52px;
-        padding: 0 24px;
-        border-radius: 15px;
-        font-size: 14px;
-        font-weight: 750;
-        text-decoration: none;
+        gap: 9px;
+        color: var(--red);
+        font: 500 11px/1 var(--mono);
+        letter-spacing: .08em;
+        text-transform: uppercase;
       }
-      .button-primary { background: var(--red); color: var(--white); }
-      .button-secondary { border: 1px solid #e4dedd; color: var(--ink); background: var(--white); }
-      .note { margin: 14px 0 0; color: #85868d; font-size: 12px; }
-      .features {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 0 28px;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
+      .eyebrow::before {
+        content: "";
+        width: 20px;
+        height: 1px;
+        background: currentColor;
       }
-      .feature {
-        padding: 26px 24px;
-        border: 1px solid var(--line);
-        border-radius: 20px;
-        background: var(--white);
-      }
-      .feature-number { color: var(--red); font-size: 12px; font-weight: 800; letter-spacing: 1px; }
-      h2 { margin: 22px 0 0; font-size: 19px; line-height: 1.25; }
-      .feature p { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
-      .closing {
-        max-width: 1120px;
-        margin: 72px auto 0;
-        padding: 0 28px 46px;
-      }
-      .closing-inner {
-        padding: 38px 32px;
-        border-radius: 24px;
-        background: var(--ink);
-        color: var(--white);
+      .site-header {
+        position: relative;
+        z-index: 2;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 24px;
-      }
-      .closing h2 { margin: 0; max-width: 520px; font-size: 27px; line-height: 1.2; }
-      .closing p { margin: 9px 0 0; max-width: 520px; color: rgba(255,255,255,.68); font-size: 14px; line-height: 1.5; }
-      .closing .button-secondary { flex-shrink: 0; border-color: rgba(255,255,255,.24); color: var(--white); background: transparent; }
-      footer {
-        max-width: 1120px;
+        width: min(1160px, calc(100% - 48px));
         margin: 0 auto;
-        padding: 24px 28px 40px;
-        border-top: 1px solid var(--line);
-        color: #85868d;
-        font-size: 12px;
-        line-height: 1.5;
+        padding: 24px 0;
       }
-      @media (max-width: 700px) {
-        header { padding: 18px 20px; }
-        .hero { padding: 66px 20px 62px; }
-        .hero-copy { font-size: 16px; }
-        .features { padding: 0 20px; grid-template-columns: 1fr; }
-        .closing { margin-top: 54px; padding: 0 20px 36px; }
-        .closing-inner { padding: 28px 24px; display: block; }
-        .closing .button { margin-top: 22px; }
-        footer { padding: 22px 20px 32px; }
+      .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; }
+      .brand-mark {
+        display: grid;
+        width: 35px;
+        height: 35px;
+        place-items: center;
+        border-radius: 12px;
+        background: var(--red);
+        color: #fff;
+        font: 800 21px/1 var(--sans);
+        box-shadow: 0 5px 14px rgba(239,51,64,.16);
+      }
+      .brand-name { font-size: 16px; font-weight: 800; letter-spacing: .22em; }
+      .header-nav { display: flex; align-items: center; gap: 26px; }
+      .header-nav a {
+        color: var(--ink-soft);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .header-nav a:hover { color: var(--red); }
+      .nav-app {
+        padding: 10px 15px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255,253,251,.48);
+      }
+      .hero {
+        position: relative;
+        padding: 72px 0 102px;
+      }
+      .hero::after {
+        position: absolute;
+        z-index: -1;
+        top: -100px;
+        right: -180px;
+        width: 540px;
+        height: 540px;
+        border: 1px solid rgba(239,51,64,.12);
+        border-radius: 50%;
+        content: "";
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.02fr) minmax(420px, .98fr);
+        gap: 74px;
+        align-items: center;
+      }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 {
+        max-width: 650px;
+        margin: 22px 0 25px;
+        font-size: clamp(48px, 7vw, 88px);
+        line-height: .98;
+        letter-spacing: -.065em;
+        font-weight: 800;
+      }
+      h1 em {
+        color: var(--red);
+        font-family: var(--serif);
+        font-weight: 500;
+        letter-spacing: -.07em;
+      }
+      .hero-copy {
+        max-width: 510px;
+        color: var(--ink-soft);
+        font-size: 17px;
+        line-height: 1.7;
+      }
+      .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 31px; }
+      .button {
+        display: inline-flex;
+        min-height: 51px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 0 20px;
+        border-radius: 14px;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: transform .2s ease, background-color .2s ease, border-color .2s ease;
+      }
+      .button:hover { transform: translateY(-2px); }
+      .button-primary { background: var(--red); color: #fff; box-shadow: 0 10px 20px rgba(239,51,64,.16); }
+      .button-primary:hover { background: var(--red-deep); }
+      .button-quiet { border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+      .button-quiet:hover { border-color: #c7beba; }
+      .apple-icon { width: 15px; height: 18px; fill: currentColor; }
+      .microcopy { margin: 13px 0 0; color: var(--muted); font: 11px/1.5 var(--mono); }
+
+      .phone-stage { position: relative; min-height: 505px; }
+      .phone-stage::before {
+        position: absolute;
+        top: 22px;
+        left: 4%;
+        width: 88%;
+        height: 84%;
+        border-radius: 50%;
+        background: #e9dfda;
+        content: "";
+        transform: rotate(-8deg);
+      }
+      .phone {
+        position: absolute;
+        top: 0;
+        right: 6%;
+        width: min(320px, 78%);
+        min-height: 505px;
+        padding: 15px;
+        border: 7px solid #292a2e;
+        border-radius: 40px;
+        background: #292a2e;
+        box-shadow: 20px 24px 50px rgba(47,35,32,.18);
+        transform: rotate(4deg);
+        animation: phone-in .8s ease both;
+      }
+      .phone-screen {
+        min-height: 463px;
+        padding: 27px 19px 20px;
+        overflow: hidden;
+        border-radius: 28px;
+        background: #f7f5f3;
+      }
+      .notch { width: 76px; height: 19px; margin: -27px auto 25px; border-radius: 0 0 14px 14px; background: #292a2e; }
+      .phone-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 10px; font-weight: 700; }
+      .phone-title { margin: 22px 0 5px; font-size: 22px; letter-spacing: -.04em; }
+      .phone-date { margin: 0; color: var(--muted); font-size: 10px; }
+      .balance-card { margin-top: 22px; padding: 18px; border-radius: 18px; background: var(--red); color: #fff; }
+      .balance-label { font: 10px var(--mono); opacity: .75; }
+      .balance-value { margin-top: 7px; font-size: 32px; font-weight: 800; letter-spacing: -.07em; }
+      .balance-bar { height: 5px; margin-top: 17px; overflow: hidden; border-radius: 9px; background: rgba(255,255,255,.28); }
+      .balance-bar::after { display: block; width: 58%; height: 100%; border-radius: inherit; background: #fff; content: ""; }
+      .bucket-heading { display: flex; justify-content: space-between; margin: 22px 0 10px; font-size: 11px; font-weight: 800; }
+      .bucket-heading span { color: var(--muted); font-weight: 500; }
+      .bucket { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #e6e1de; }
+      .bucket-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); }
+      .bucket:nth-child(3) .bucket-dot { background: #c7a35c; }
+      .bucket:nth-child(4) .bucket-dot { background: #607f72; }
+      .bucket-name { flex: 1; font-size: 11px; font-weight: 700; }
+      .bucket-amount { font: 11px var(--mono); }
+      .floating-note {
+        position: absolute;
+        right: -1%;
+        bottom: 28px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 15px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(255,253,251,.94);
+        box-shadow: 0 12px 32px rgba(47,35,32,.12);
+        font-size: 11px;
+        font-weight: 800;
+        animation: float-note 4s ease-in-out infinite;
+      }
+      .floating-note i { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; background: #dfe9df; color: var(--green); font-style: normal; }
+
+      .signal {
+        padding: 22px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .signal-inner { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+      .signal p { margin: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
+      .signal strong { color: var(--red); font-weight: 800; }
+      .signal-rule { width: 70px; height: 1px; flex-shrink: 0; background: var(--red); }
+
+      .section { padding: 125px 0; }
+      .section-heading { display: grid; grid-template-columns: .72fr 1fr; gap: 80px; align-items: end; margin-bottom: 50px; }
+      h2 { max-width: 500px; margin: 17px 0 0; font-size: clamp(34px, 4.4vw, 58px); line-height: 1.02; letter-spacing: -.06em; }
+      .section-intro { max-width: 430px; margin: 0 0 4px; color: var(--muted); font-size: 15px; line-height: 1.7; }
+      .steps { display: grid; grid-template-columns: 1.15fr .85fr .95fr; gap: 14px; }
+      .step {
+        min-height: 272px;
+        padding: 27px;
+        border: 1px solid var(--line);
+        border-radius: 23px;
+        background: var(--card);
+      }
+      .step:first-child { background: var(--ink); color: #fff; }
+      .step-num { color: var(--red); font: 12px var(--mono); }
+      .step h3 { margin: 68px 0 11px; font-size: 19px; letter-spacing: -.03em; }
+      .step p { max-width: 270px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+      .step:first-child p { color: rgba(255,255,255,.62); }
+
+      .calm-section { padding: 0 0 126px; }
+      .calm-panel {
+        display: grid;
+        grid-template-columns: .92fr 1.08fr;
+        gap: 60px;
+        align-items: center;
+        padding: 68px;
+        border-radius: 28px;
+        background: var(--paper-warm);
+      }
+      .calm-panel h2 { margin-bottom: 20px; }
+      .calm-panel > div > p { max-width: 410px; margin-bottom: 0; color: var(--ink-soft); font-size: 15px; line-height: 1.75; }
+      .principles { display: grid; gap: 0; }
+      .principle { display: grid; grid-template-columns: 32px 1fr; gap: 16px; padding: 19px 0; border-bottom: 1px solid rgba(118,117,122,.2); }
+      .principle:last-child { border-bottom: 0; }
+      .principle-num { color: var(--red); font: 12px var(--mono); }
+      .principle h3 { margin: 0 0 5px; font-size: 15px; }
+      .principle p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+      .final-cta { padding: 0 0 90px; }
+      .final-panel {
+        position: relative;
+        overflow: hidden;
+        padding: 74px 70px;
+        border-radius: 28px;
+        background: var(--red);
+        color: #fff;
+      }
+      .final-panel::after {
+        position: absolute;
+        right: 7%;
+        bottom: -115px;
+        width: 330px;
+        height: 330px;
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 50%;
+        content: "";
+      }
+      .final-panel h2 { position: relative; z-index: 1; max-width: 600px; margin: 0 0 17px; }
+      .final-panel p { position: relative; z-index: 1; max-width: 480px; margin: 0; color: rgba(255,255,255,.78); font-size: 15px; line-height: 1.65; }
+      .final-panel .button { position: relative; z-index: 1; margin-top: 29px; background: #fff; color: var(--red); }
+      .final-panel .button:hover { background: #fff5f3; }
+      footer { padding: 24px 0 42px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+      .footer-inner { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+      footer strong { color: var(--ink); letter-spacing: .18em; }
+      footer nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px 18px; }
+      footer a { text-decoration: none; }
+      footer a:hover { color: var(--red); }
+
+      @keyframes phone-in { from { opacity: 0; transform: translateY(16px) rotate(4deg); } to { opacity: 1; transform: translateY(0) rotate(4deg); } }
+      @keyframes float-note { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      }
+      @media (max-width: 820px) {
+        .hero-grid { grid-template-columns: 1fr; gap: 30px; }
+        .hero { padding-top: 50px; }
+        .phone-stage { width: min(500px, 100%); margin: 0 auto; }
+        .section-heading { grid-template-columns: 1fr; gap: 18px; }
+        .steps { grid-template-columns: 1fr; }
+        .step { min-height: 220px; }
+        .step h3 { margin-top: 43px; }
+        .calm-panel { grid-template-columns: 1fr; gap: 35px; padding: 42px 34px; }
+      }
+      @media (max-width: 580px) {
+        .container, .site-header { width: min(100% - 40px, 1160px); }
+        .site-header { padding: 17px 0; }
+        .header-nav a:not(.nav-app) { display: none; }
+        .nav-app { padding: 9px 12px; }
+        .hero { padding: 48px 0 72px; }
+        h1 { font-size: clamp(47px, 14vw, 67px); }
+        .hero-copy { font-size: 15px; }
+        .cta-row { display: grid; }
+        .button { width: 100%; }
+        .phone-stage { min-height: 460px; }
+        .phone { right: 7%; width: 286px; min-height: 460px; border-radius: 35px; }
+        .phone-screen { min-height: 418px; }
+        .floating-note { right: -2%; bottom: 18px; }
+        .signal-inner { align-items: flex-start; }
+        .signal-rule { display: none; }
+        .section { padding: 86px 0; }
+        .calm-section { padding-bottom: 86px; }
+        h2 { font-size: 39px; }
+        .final-cta { padding-bottom: 65px; }
+        .final-panel { padding: 48px 27px; }
+        .footer-inner { display: block; }
+        footer nav { justify-content: flex-start; margin-top: 14px; }
+        footer a { display: inline-block; }
       }
     </style>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "MobileApplication",
+        "name": "APP_NAME_PLACEHOLDER",
+        "description": "Vigil Spend is a personal money-awareness app for capturing spending, seeing what remains in your buckets, and making clearer next decisions with less guesswork.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "iOS",
+        "url": "BASE_URL_PLACEHOLDER",
+        "downloadUrl": "https://apps.apple.com/app/id6811090049",
+        "featureList": [
+          "Manual spending capture",
+          "Receipt and bank screenshot capture",
+          "Voice transaction capture",
+          "Spending buckets and personal analysis"
+        ]
+      }
+    </script>
+    <script>
+      window.VIGIL_EXPO_URL = EXPS_URL_JSON_PLACEHOLDER;
+    </script>
   </head>
   <body>
-    <div class="shell">
-      <header>
-        <a class="brand" href="BASE_URL_PLACEHOLDER">
+    <div class="page">
+      <header class="site-header">
+        <a class="brand" href="BASE_URL_PLACEHOLDER" aria-label="Vigil Spend home">
           <span class="brand-mark" aria-hidden="true">V</span>
-          <span class="brand-name">VIGIL</span>
+          <span class="brand-name">Vigil Spend</span>
         </a>
-        <a class="header-link" href="EXPS_URL_ATTRIBUTE_PLACEHOLDER">Open mobile app</a>
+        <nav class="header-nav" aria-label="Primary navigation">
+          <a href="#how-it-works">How it works</a>
+          <a href="#principles">The Vigil Spend way</a>
+          <a class="nav-app" href="EXPS_URL_ATTRIBUTE_PLACEHOLDER">Open mobile app</a>
+        </nav>
       </header>
 
       <main>
-        <section class="hero">
-          <div class="eyebrow">KNOW WHERE IT ALL GOES</div>
-          <h1>Awareness is the first step to real change.</h1>
-          <p class="hero-copy">Vigil helps you notice spending, protect what matters, and make the next money decision consciously.</p>
-          <div class="actions">
-            <a class="button button-primary" href="EXPS_URL_ATTRIBUTE_PLACEHOLDER">Try Vigil on your phone</a>
-            <a class="button button-secondary" href="#how-it-works">See how it works</a>
-          </div>
-          <p class="note">Free to start. Your financial data stays on your device.</p>
-        </section>
-
-        <section class="features" id="how-it-works">
-          <article class="feature">
-            <div class="feature-number">01</div>
-            <h2>Capture spending quickly</h2>
-            <p>Log a purchase, receipt, voice note, or bank message before it gets lost in the month.</p>
-          </article>
-          <article class="feature">
-            <div class="feature-number">02</div>
-            <h2>See what is still available</h2>
-            <p>Simple buckets show where your money is going and what each decision leaves behind.</p>
-          </article>
-          <article class="feature">
-            <div class="feature-number">03</div>
-            <h2>Plan without the guilt</h2>
-            <p>Vigil turns money pressure into a clear next step, with deeper insights when you want them.</p>
-          </article>
-        </section>
-
-        <section class="closing">
-          <div class="closing-inner">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="container hero-grid">
             <div>
-              <h2>Your money can feel clearer than it does today.</h2>
-              <p>Open Vigil on your phone to build a plan around the life you are actually living.</p>
+              <div class="eyebrow">Personal money awareness</div>
+                <h1 id="hero-title">Vigil Spend makes money feel <em>knowable.</em></h1>
+              <p class="hero-copy">Vigil Spend helps you capture spending, see what remains in your buckets, and make a clearer next decision — without shame, noise, or a spreadsheet spiral.</p>
+              <div class="cta-row">
+                <a class="button button-primary" href="https://apps.apple.com/app/id6811090049" rel="noopener noreferrer">
+                  <svg class="apple-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.71 19.5c-.98 1.45-2 2.9-3.62 2.93-1.6.03-2.13-.94-3.97-.94-1.85 0-2.43.91-3.95.97-1.57.06-2.75-1.57-3.73-3.01C1.44 16.5-.08 11.12 2 7.41a5.8 5.8 0 0 1 4.91-2.97c1.55-.03 3.02 1.03 3.95 1.03.94 0 2.69-1.27 4.53-1.08a5.5 5.5 0 0 1 4.31 2.34 5.4 5.4 0 0 0-2.53 4.54 5.27 5.27 0 0 0 3.2 4.84c-.29.84-.72 1.64-1.66 3.39ZM14.9 2.5A5.4 5.4 0 0 1 13.64 6.4a4.96 4.96 0 0 1-3.96 1.94A5.04 5.04 0 0 1 10.96 4.5 5.75 5.75 0 0 1 14.9 2.5Z"/></svg>
+                  Download on the App Store
+                </a>
+                <a class="button button-quiet" href="#how-it-works">See how it works</a>
+              </div>
+              <p class="microcopy">For the moments between “where did it go?” and “what now?”</p>
             </div>
-            <a class="button button-secondary" href="EXPS_URL_ATTRIBUTE_PLACEHOLDER">Open in Expo Go</a>
+
+            <div class="phone-stage" aria-label="Illustration of Vigil Spend showing remaining money in spending buckets">
+              <div class="phone">
+                <div class="phone-screen">
+                  <div class="notch" aria-hidden="true"></div>
+                  <div class="phone-top"><span>9:41</span><span>Vigil Spend</span></div>
+                  <h2 class="phone-title">Good morning.</h2>
+                  <p class="phone-date">Your month, at a glance</p>
+                  <div class="balance-card">
+                    <div class="balance-label">REMAINING THIS MONTH</div>
+                    <div class="balance-value">$1,284.20</div>
+                    <div class="balance-bar" aria-hidden="true"></div>
+                  </div>
+                  <div class="bucket-heading">Your buckets <span>Remaining</span></div>
+                  <div class="bucket"><span class="bucket-dot"></span><span class="bucket-name">Everyday</span><span class="bucket-amount">$412.60</span></div>
+                  <div class="bucket"><span class="bucket-dot"></span><span class="bucket-name">Plans</span><span class="bucket-amount">$680.00</span></div>
+                  <div class="bucket"><span class="bucket-dot"></span><span class="bucket-name">Flex</span><span class="bucket-amount">$191.60</span></div>
+                </div>
+              </div>
+              <div class="floating-note"><i aria-hidden="true">✓</i><span>Spending captured</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="signal" aria-label="Vigil Spend's focus">
+          <div class="container signal-inner">
+            <p><strong>Know Where It All Goes.</strong> Then decide what deserves your attention next.</p>
+            <span class="signal-rule" aria-hidden="true"></span>
+            <p>One calm view of the money you already have.</p>
+          </div>
+        </section>
+
+        <section class="section" id="how-it-works" aria-labelledby="how-title">
+          <div class="container">
+            <div class="section-heading">
+              <div>
+                <div class="eyebrow">A clearer rhythm</div>
+                <h2 id="how-title">Notice first. Decide second.</h2>
+              </div>
+              <p class="section-intro">Money awareness is not another thing to be perfect at. Vigil Spend gives each purchase a place, each bucket a current view, and your next decision a little more room.</p>
+            </div>
+            <div class="steps">
+              <article class="step">
+                <div class="step-num">01 / CAPTURE</div>
+                <h3>Put spending somewhere real.</h3>
+                <p>Record what you spend as you go, so the month is made of decisions you can actually see.</p>
+              </article>
+              <article class="step">
+                <div class="step-num">02 / SEE</div>
+                <h3>Check what remains.</h3>
+                <p>Look at your buckets and understand what is available before the next choice arrives.</p>
+              </article>
+              <article class="step">
+                <div class="step-num">03 / CHOOSE</div>
+                <h3>Take the next clear step.</h3>
+                <p>Use the view in front of you to plan, adjust, or simply carry on with less guesswork.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="calm-section" id="principles" aria-labelledby="principles-title">
+          <div class="container">
+            <div class="calm-panel">
+              <div>
+                <div class="eyebrow">The Vigil Spend way</div>
+                <h2 id="principles-title">A softer voice for a practical job.</h2>
+                <p>Vigil Spend is built for awareness, not surveillance. It keeps the useful parts of money tracking close and leaves the judgment outside.</p>
+              </div>
+              <div class="principles">
+                <article class="principle">
+                  <div class="principle-num">A</div>
+                  <div><h3>Clear over complicated</h3><p>See the information that helps with the next decision, without a wall of numbers.</p></div>
+                </article>
+                <article class="principle">
+                  <div class="principle-num">B</div>
+                  <div><h3>Encouraging over corrective</h3><p>Make room for real life. A useful view starts with where you are, not where you “should” be.</p></div>
+                </article>
+                <article class="principle">
+                  <div class="principle-num">C</div>
+                  <div><h3>Personal over prescriptive</h3><p>Your buckets reflect your priorities and the way your month actually moves.</p></div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="final-cta" aria-labelledby="final-title">
+          <div class="container">
+            <div class="final-panel">
+              <div class="eyebrow" style="color:rgba(255,255,255,.78)">Start with today</div>
+              <h2 id="final-title">You do not need a perfect plan to begin.</h2>
+              <p>Open Vigil Spend, capture what is happening, and let a clearer picture shape the next decision.</p>
+                <a class="button" href="https://apps.apple.com/app/id6811090049" rel="noopener noreferrer">
+                <svg class="apple-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.71 19.5c-.98 1.45-2 2.9-3.62 2.93-1.6.03-2.13-.94-3.97-.94-1.85 0-2.43.91-3.95.97-1.57.06-2.75-1.57-3.73-3.01C1.44 16.5-.08 11.12 2 7.41a5.8 5.8 0 0 1 4.91-2.97c1.55-.03 3.02 1.03 3.95 1.03.94 0 2.69-1.27 4.53-1.08a5.5 5.5 0 0 1 4.31 2.34 5.4 5.4 0 0 0-2.53 4.54 5.27 5.27 0 0 0 3.2 4.84c-.29.84-.72 1.64-1.66 3.39ZM14.9 2.5A5.4 5.4 0 0 1 13.64 6.4a4.96 4.96 0 0 1-3.96 1.94A5.04 5.04 0 0 1 10.96 4.5 5.75 5.75 0 0 1 14.9 2.5Z"/></svg>
+                Download on the App Store
+              </a>
+            </div>
           </div>
         </section>
       </main>
 
       <footer>
-        <strong>VIGIL</strong> — A clearer relationship with the money you already have.
+        <div class="container footer-inner">
+          <div>
+            <strong>Vigil Spend</strong>
+            <span> — Know Where It All Goes.</span>
+          </div>
+          <nav aria-label="Footer navigation">
+            <a href="/support">Support</a>
+            <a href="/legal/privacy">Privacy</a>
+            <a href="/legal/terms">Terms</a>
+            <a href="/legal/eula">Apple EULA</a>
+            <a href="/account-deletion">Account deletion</a>
+          </nav>
+        </div>
       </footer>
     </div>
   </body>

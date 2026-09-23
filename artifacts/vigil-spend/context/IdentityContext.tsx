@@ -20,6 +20,7 @@ type AppleSession = {
     email: string | null;
     displayName: string | null;
     isAdmin: false;
+    proOverride: boolean;
   };
 };
 
@@ -33,6 +34,9 @@ export type VigilIdentity = {
   deleteAccount: () => Promise<void>;
   signInWithApple: () => Promise<{ displayName: string | null }>;
   displayName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  imageUrl: string | null;
   email: string | null;
   isAdmin: boolean;
   proOverride: boolean;
@@ -294,10 +298,20 @@ export function IdentityProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     if (!clerkUser) throw new Error('No signed-in account was found.');
+    const token = await getToken();
+    if (!token) throw new Error('The secure session is not ready. Please try again.');
+    const supportResponse = await fetch(apiUrl('/api/vigil/support-requests/me'), {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!supportResponse.ok) {
+      const body = await supportResponse.json().catch(() => null) as { message?: string } | null;
+      throw new Error(body?.message || 'Support data could not be deleted. Please try again.');
+    }
     await clerkUser.delete();
     await clerkSignOut();
     await persistActiveProvider('signed-out');
-  }, [appleSession, clearAppleSession, clerkSignOut, clerkUser, persistActiveProvider]);
+  }, [appleSession, clearAppleSession, clerkSignOut, clerkUser, getToken, persistActiveProvider]);
 
   const activateClerk = useCallback(async () => {
     await persistActiveProvider('clerk');
@@ -306,8 +320,11 @@ export function IdentityProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<VigilIdentity>(() => {
     if (appleSession) {
       return {
-        isLoaded: appleRestored,
-        isSignedIn: appleRestored,
+        // The app must not expose auth controls until both providers have
+        // finished restoring. Clerk may still be rehydrating a browser
+        // session after the local Apple marker has been read.
+        isLoaded: appleRestored && clerkAuth.isLoaded,
+        isSignedIn: appleRestored && clerkAuth.isLoaded,
         userId: appleSession.identity.userId,
         provider: 'apple',
         getToken,
@@ -315,18 +332,26 @@ export function IdentityProvider({ children }: { children: React.ReactNode }) {
         deleteAccount,
         signInWithApple,
         displayName: appleSession.identity.displayName,
+        firstName: appleSession.identity.displayName?.split(/\s+/)[0] || null,
+        lastName: appleSession.identity.displayName?.split(/\s+/).slice(1).join(' ') || null,
+        imageUrl: null,
         email: appleSession.identity.email,
         isAdmin: false,
-        proOverride: false,
+      proOverride: appleSession.identity.proOverride,
         clerkAvailable: clerkAuth.isLoaded,
         activateClerk,
       };
     }
-    const clerkSelected = activeProvider === 'clerk' || (activeProvider === null && Boolean(clerkAuth.isSignedIn));
+    // Clerk is the source of truth for a live Clerk session. A stale
+    // signed-out marker must not hide that session and leave the sign-in
+    // screen trying to create another session, which Clerk rejects with
+    // `session_exists`. An active Apple session is handled above and always
+    // takes precedence.
+    const clerkSelected = activeProvider !== 'apple' && Boolean(clerkAuth.isSignedIn);
     return {
-      // Do not gate the native Apple path on Clerk initialization. Clerk
-      // controls only its own legacy sessions and sign-in controls.
-      isLoaded: appleRestored,
+      // Wait for both local identity restoration and Clerk restoration before
+      // deciding whether to show the sign-in form or the active-session state.
+      isLoaded: appleRestored && clerkAuth.isLoaded,
       isSignedIn: clerkSelected && Boolean(clerkAuth.isSignedIn),
       userId: clerkAuth.userId ?? null,
       provider: clerkSelected && clerkAuth.isSignedIn ? 'clerk' : null,
@@ -335,6 +360,9 @@ export function IdentityProvider({ children }: { children: React.ReactNode }) {
       deleteAccount,
       signInWithApple,
       displayName: clerkUser?.fullName || clerkUser?.username || clerkUser?.primaryEmailAddress?.emailAddress || null,
+      firstName: clerkUser?.firstName ?? null,
+      lastName: clerkUser?.lastName ?? null,
+      imageUrl: clerkUser?.imageUrl ?? null,
       email: clerkUser?.primaryEmailAddress?.emailAddress ?? null,
       // Apple sessions are always non-admin; Clerk remains the sole authority
       // for this legacy administrative surface and the server verifies it again.
@@ -453,9 +481,12 @@ export function AppleOnlyIdentityProvider({ children }: { children: React.ReactN
     deleteAccount,
     signInWithApple,
     displayName: appleSession?.identity.displayName ?? null,
+    firstName: appleSession?.identity.displayName?.split(/\s+/)[0] || null,
+    lastName: appleSession?.identity.displayName?.split(/\s+/).slice(1).join(' ') || null,
+    imageUrl: null,
     email: appleSession?.identity.email ?? null,
     isAdmin: false,
-    proOverride: false,
+    proOverride: appleSession?.identity.proOverride ?? false,
     clerkAvailable: false,
     activateClerk: async () => { throw new Error('Email and Google sign-in are unavailable in this build.'); },
   }), [appleSession, deleteAccount, getToken, isLoaded, signInWithApple, signOut]);

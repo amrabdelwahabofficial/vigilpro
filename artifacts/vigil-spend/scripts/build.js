@@ -139,20 +139,20 @@ async function startMetro(expoPublicDomain, expoPublicReplId) {
 
   console.log('Starting Metro...');
   console.log(`Setting EXPO_PUBLIC_DOMAIN=${expoPublicDomain}`);
-  const clerkProxyUrl = process.env.CLERK_PROXY_URL
-    ? `https://${expoPublicDomain}${process.env.CLERK_PROXY_URL}`
-    : '';
+  const clerkMode = 'production';
+  const publishableKey = process.env.VIGIL_EXTERNAL_CLERK_PUBLISHABLE_KEY;
+  if (!publishableKey) {
+    throw new Error('Vigil production web build requires VIGIL_EXTERNAL_CLERK_PUBLISHABLE_KEY; refusing to select another tenant.');
+  }
   const env = {
     ...process.env,
+    VIGIL_CLERK_MODE: clerkMode,
     EXPO_PUBLIC_DOMAIN: expoPublicDomain,
     EXPO_PUBLIC_REPL_ID: expoPublicReplId,
-    EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY:
-      process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ||
-      process.env.VITE_CLERK_PUBLISHABLE_KEY ||
-      process.env.CLERK_PUBLISHABLE_KEY,
-    EXPO_PUBLIC_CLERK_PROXY_URL: clerkProxyUrl,
+    EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: publishableKey,
+    EXPO_PUBLIC_CLERK_USE_PROXY: 'false',
+    EXPO_PUBLIC_CLERK_PROXY_URL: '',
     EXPO_PUBLIC_REVENUECAT_IOS_API_KEY: process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY,
-    EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY,
     EXPO_PUBLIC_REVENUECAT_TEST_API_KEY: process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY,
   };
 
