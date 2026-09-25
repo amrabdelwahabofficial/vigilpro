@@ -8,7 +8,7 @@ import { clearDiagnostics, formatDiagnostic, readDiagnostics, type DiagnosticEve
 
 export default function DiagnosticsScreen() {
   const { palette } = useVigil();
-  const { isLoaded, isAdmin } = useIdentity();
+  const { isLoaded, isSignedIn } = useIdentity();
   const [events, setEvents] = useState<DiagnosticEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,13 +19,15 @@ export default function DiagnosticsScreen() {
   }, []);
 
   useEffect(() => {
-    if (isLoaded && isAdmin) void load();
-  }, [isAdmin, isLoaded, load]);
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      router.replace('/sign-in');
+      return;
+    }
+    void load();
+  }, [isLoaded, isSignedIn, load]);
 
-  if (isLoaded && !isAdmin) {
-    router.replace('/(tabs)/settings');
-    return null;
-  }
+  if (!isLoaded || !isSignedIn) return null;
 
   const copy = async () => {
     await Clipboard.setStringAsync(events.map(formatDiagnostic).join('\n'));

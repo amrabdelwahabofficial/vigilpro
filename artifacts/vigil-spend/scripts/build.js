@@ -3,6 +3,8 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { Readable } = require('stream');
 const { pipeline } = require('stream/promises');
+const { resolveProductionClerkBuildConfig } = require('./production-clerk-guard.cjs');
+const { resolveProductionRevenueCatConfig } = require('./production-revenuecat-guard.cjs');
 
 let metroProcess = null;
 
@@ -47,33 +49,8 @@ function setupSignalHandlers() {
   process.on('SIGHUP', cleanup);
 }
 
-function stripProtocol(domain) {
-  let urlString = domain.trim();
-
-  if (!/^https?:\/\//i.test(urlString)) {
-    urlString = `https://${urlString}`;
-  }
-
-  return new URL(urlString).host;
-}
-
 function getDeploymentDomain() {
-  if (process.env.REPLIT_INTERNAL_APP_DOMAIN) {
-    return stripProtocol(process.env.REPLIT_INTERNAL_APP_DOMAIN);
-  }
-
-  if (process.env.REPLIT_DEV_DOMAIN) {
-    return stripProtocol(process.env.REPLIT_DEV_DOMAIN);
-  }
-
-  if (process.env.EXPO_PUBLIC_DOMAIN) {
-    return stripProtocol(process.env.EXPO_PUBLIC_DOMAIN);
-  }
-
-  console.error(
-    'ERROR: No deployment domain found. Set REPLIT_INTERNAL_APP_DOMAIN, REPLIT_DEV_DOMAIN, or EXPO_PUBLIC_DOMAIN',
-  );
-  process.exit(1);
+  return resolveProductionClerkBuildConfig(process.env).domain;
 }
 
 function prepareDirectories(timestamp) {
@@ -144,17 +121,38 @@ async function startMetro(expoPublicDomain, expoPublicReplId) {
   if (!publishableKey) {
     throw new Error('Vigil production web build requires VIGIL_EXTERNAL_CLERK_PUBLISHABLE_KEY; refusing to select another tenant.');
   }
+  const isProductionBuild = clerkMode === 'production'
+    || process.env.EXPO_PUBLIC_VIGIL_BUILD_PROFILE === 'production';
+  const revenueCatIosKey = isProductionBuild
+    ? require('../eas.json').build.production.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY
+    : process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY;
+  const revenueCatTestKey = isProductionBuild
+    ? ''
+    : process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY;
+
+  if (isProductionBuild) {
+    resolveProductionRevenueCatConfig({
+      EXPO_PUBLIC_REVENUECAT_IOS_API_KEY: revenueCatIosKey,
+      EXPO_PUBLIC_REVENUECAT_TEST_API_KEY: revenueCatTestKey,
+    });
+  }
+
   const env = {
     ...process.env,
     VIGIL_CLERK_MODE: clerkMode,
     EXPO_PUBLIC_DOMAIN: expoPublicDomain,
     EXPO_PUBLIC_REPL_ID: expoPublicReplId,
     EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: publishableKey,
+    EXPO_PUBLIC_VIGIL_EXTERNAL_CLERK_PUBLISHABLE_KEY: publishableKey,
     EXPO_PUBLIC_CLERK_USE_PROXY: 'false',
     EXPO_PUBLIC_CLERK_PROXY_URL: '',
-    EXPO_PUBLIC_REVENUECAT_IOS_API_KEY: process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY,
-    EXPO_PUBLIC_REVENUECAT_TEST_API_KEY: process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY,
+    EXPO_PUBLIC_VIGIL_BUILD_PROFILE: isProductionBuild
+      ? 'production'
+      : (process.env.EXPO_PUBLIC_VIGIL_BUILD_PROFILE || 'development'),
+    EXPO_PUBLIC_REVENUECAT_IOS_API_KEY: revenueCatIosKey,
+    EXPO_PUBLIC_REVENUECAT_TEST_API_KEY: revenueCatTestKey,
   };
+  delete env.VIGIL_REVENUECAT_PRODUCTION_IOS_API_KEY;
 
   if (expoPublicReplId) {
     console.log(`Setting EXPO_PUBLIC_REPL_ID=${expoPublicReplId}`);

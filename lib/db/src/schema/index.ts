@@ -18,3 +18,4 @@
 //   export type Post = typeof postsTable.$inferSelect;
 
 export * from "./vigilAppleAuth.ts";
+export * from "./vigilSupport.ts";

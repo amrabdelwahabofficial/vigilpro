@@ -2,6 +2,7 @@ import { createClerkClient } from "@clerk/backend";
 import { pool } from "@workspace/db";
 import { Router, type Request, type Response } from "express";
 import { authenticateVigilRequest } from "../lib/vigilIdentity";
+import { getClerkSecretKey } from "../lib/clerkConfig";
 
 const router = Router();
 
@@ -19,7 +20,7 @@ router.patch("/vigil/profile", async (req: Request, res: Response) => {
       );
       return res.json({ ok: true });
     }
-    const secretKey = process.env.CLERK_SECRET_KEY;
+    const secretKey = getClerkSecretKey();
     if (!secretKey) return res.status(500).json({ message: "Authentication service is not configured." });
     await createClerkClient({ secretKey }).users.updateUser(identity.userId, { firstName, lastName });
     return res.json({ ok: true });

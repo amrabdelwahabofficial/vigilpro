@@ -21,6 +21,7 @@ export const vigilAppleAccounts = pgTable(
     email: text("email"),
     firstName: text("first_name"),
     lastName: text("last_name"),
+    proOverride: boolean("pro_override").notNull().default(false),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()

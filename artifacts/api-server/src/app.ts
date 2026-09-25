@@ -12,9 +12,12 @@ import {
   clerkProxyMiddleware,
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
+import { getClerkPublishableKey, getClerkSecretKey } from "./lib/clerkConfig";
 
 const app: Express = express();
 const trustedProxyHops = Number.parseInt(process.env.TRUST_PROXY_HOPS ?? "0", 10);
+const clerkPublishableKey = getClerkPublishableKey();
+const clerkSecretKey = getClerkSecretKey();
 // Honor forwarding headers only through an explicitly bounded proxy chain.
 app.set("trust proxy", Number.isInteger(trustedProxyHops) && trustedProxyHops >= 0 && trustedProxyHops <= 10 ? trustedProxyHops : 0);
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
@@ -22,9 +25,9 @@ app.use(
   clerkMiddleware((req) => ({
     publishableKey: publishableKeyFromHost(
       getClerkProxyHost(req) ?? "",
-      process.env.CLERK_PUBLISHABLE_KEY,
+      clerkPublishableKey,
     ),
-    secretKey: process.env.CLERK_SECRET_KEY,
+    secretKey: clerkSecretKey,
   })),
 );
 

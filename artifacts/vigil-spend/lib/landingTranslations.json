@@ -1,0 +1,814 @@
+{
+  "en": {
+    "meta": {
+      "title": "Vigil Spend — Know where your money goes",
+      "description": "Notice spending, protect what matters, and make your next money decision with more clarity. Start free with Vigil Spend.",
+      "social": "A calmer way to see what remains, protect your priorities, and choose your next move.",
+      "imageAlt": "Vigil Spend — a calmer way to understand your money"
+    },
+    "languageLabel": "Choose language",
+    "homeAria": "Vigil Spend home",
+    "navAria": "Primary navigation",
+    "nav": {
+      "how": "How it works",
+      "approach": "Our approach",
+      "pro": "Vigil Pro",
+      "download": "Download app"
+    },
+    "hero": {
+      "eyebrow": "KNOW WHERE IT ALL GOES",
+      "title": "Awareness is the first step to real change.",
+      "copy": "Vigil helps you notice spending, protect what matters, and make your next money decision consciously—with less shame, noise, and guesswork.",
+      "download": "Download on the App Store",
+      "how": "See how it works",
+      "microcopy": "Start with today. Your next decision can feel clearer."
+    },
+    "phone": {
+      "aria": "Example Vigil Spend screen showing money left for the month",
+      "demo": "SAMPLE PLAN",
+      "greeting": "Good morning.",
+      "month": "Your month, at a glance",
+      "remaining": "REMAINING THIS MONTH",
+      "buckets": "Your buckets",
+      "available": "Remaining",
+      "everyday": "Everyday",
+      "plans": "Plans",
+      "flex": "Flex",
+      "captured": "Spending captured"
+    },
+    "signal": {
+      "aria": "Vigil Spend's focus",
+      "lead": "Know where it all goes.",
+      "copy": "Then decide what deserves your attention next.",
+      "secondary": "One calm view of the money you already have."
+    },
+    "how": {
+      "eyebrow": "A CLEARER RHYTHM",
+      "title": "Notice first. Decide second.",
+      "intro": "Money awareness is not another thing to be perfect at. Give each purchase a place, see what remains, and make your next choice with more room.",
+      "steps": [
+        {
+          "label": "01 / CAPTURE",
+          "title": "Put spending somewhere real.",
+          "copy": "Record purchases as you go, so your month is made of choices you can actually see."
+        },
+        {
+          "label": "02 / SEE",
+          "title": "Check what remains.",
+          "copy": "Look at your buckets and know what is available before the next choice arrives."
+        },
+        {
+          "label": "03 / CHOOSE",
+          "title": "Take the next clear step.",
+          "copy": "Plan, adjust, or simply carry on with less guesswork."
+        }
+      ]
+    },
+    "pro": {
+      "eyebrow": "MORE ROOM TO MOVE",
+      "title": "Start free. Go further with Vigil Pro.",
+      "copy": "Build a money plan at your own pace. When you want less manual work and a fuller picture, Pro is ready.",
+      "freeLabel": "FREE TO START",
+      "freeCopy": "Make a clear plan with manual spending entries and the essentials you choose to track.",
+      "proLabel": "VIGIL PRO",
+      "benefits": [
+        "Capture spending with voice, receipts, and bank messages",
+        "Unlock full Analysis with clearer explanations",
+        "Create custom buckets around your priorities",
+        "Plan with currency-aware tools"
+      ],
+      "priceNote": "Choose monthly or annual in the app. Apple shows the price, renewal terms, and any available introductory offer before you subscribe.",
+      "download": "Get Vigil and explore Pro"
+    },
+    "approach": {
+      "eyebrow": "THE VIGIL SPEND WAY",
+      "title": "A softer voice for a practical job.",
+      "copy": "Vigil Spend is built for awareness, not surveillance. Keep the useful parts of money tracking close and leave the judgment outside.",
+      "items": [
+        {
+          "title": "Clear over complicated",
+          "copy": "See what helps with your next decision, without a wall of numbers."
+        },
+        {
+          "title": "Encouraging over corrective",
+          "copy": "Start with real life as it is—not where you think you should be."
+        },
+        {
+          "title": "Personal over prescriptive",
+          "copy": "Shape your buckets around your priorities and the way your month moves."
+        }
+      ]
+    },
+    "closing": {
+      "eyebrow": "START WITH TODAY",
+      "title": "You do not need a perfect plan to begin.",
+      "copy": "Open Vigil Spend, capture what is happening, and let a clearer picture shape your next decision.",
+      "download": "Download on the App Store"
+    },
+    "footer": {
+      "tagline": "Know Where It All Goes.",
+      "navAria": "Support and legal links",
+      "support": "Support",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "eula": "Apple EULA",
+      "deletion": "Account deletion"
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Vigil Spend — Sachez où va votre argent",
+      "description": "Prenez conscience de vos dépenses, protégez l’essentiel et décidez plus sereinement. Commencez gratuitement avec Vigil Spend.",
+      "social": "Une façon plus sereine de voir ce qu’il vous reste, protéger vos priorités et choisir la suite.",
+      "imageAlt": "Vigil Spend — une relation plus sereine avec votre argent"
+    },
+    "languageLabel": "Choisir la langue",
+    "homeAria": "Accueil Vigil Spend",
+    "navAria": "Navigation principale",
+    "nav": {
+      "how": "Comment ça marche",
+      "approach": "Notre approche",
+      "pro": "Vigil Pro",
+      "download": "Télécharger l’app"
+    },
+    "hero": {
+      "eyebrow": "SACHEZ OÙ VA VOTRE ARGENT",
+      "title": "La prise de conscience ouvre la voie au changement.",
+      "copy": "Vigil vous aide à observer vos dépenses, protéger l’essentiel et décider consciemment, sans culpabilité ni tableur compliqué.",
+      "download": "Télécharger sur l’App Store",
+      "how": "Découvrir comment ça marche",
+      "microcopy": "Commencez aujourd’hui. Votre prochaine décision peut être plus claire."
+    },
+    "phone": {
+      "aria": "Exemple d’écran Vigil Spend montrant le montant restant pour le mois",
+      "demo": "EXEMPLE DE PLAN",
+      "greeting": "Bonjour.",
+      "month": "Votre mois en un coup d’œil",
+      "remaining": "RESTE POUR CE MOIS",
+      "buckets": "Vos catégories",
+      "available": "Disponible",
+      "everyday": "Quotidien",
+      "plans": "Projets",
+      "flex": "Flexible",
+      "captured": "Dépense enregistrée"
+    },
+    "signal": {
+      "aria": "La priorité de Vigil Spend",
+      "lead": "Sachez où va votre argent.",
+      "copy": "Puis choisissez ce qui mérite votre attention.",
+      "secondary": "Une vue sereine de l’argent que vous avez déjà."
+    },
+    "how": {
+      "eyebrow": "UN RYTHME PLUS CLAIR",
+      "title": "Observez d’abord. Décidez ensuite.",
+      "intro": "La conscience financière n’est pas une nouvelle exigence de perfection. Donnez une place à chaque achat, voyez ce qu’il reste et choisissez la suite plus sereinement.",
+      "steps": [
+        {
+          "label": "01 / NOTER",
+          "title": "Enregistrez vos dépenses.",
+          "copy": "Notez vos achats au fil du mois pour voir les décisions que vous prenez vraiment."
+        },
+        {
+          "label": "02 / VOIR",
+          "title": "Voyez ce qu’il vous reste.",
+          "copy": "Consultez vos catégories et vérifiez le disponible avant votre prochain choix."
+        },
+        {
+          "label": "03 / CHOISIR",
+          "title": "Faites un prochain pas clair.",
+          "copy": "Planifiez, ajustez ou continuez simplement avec moins d’incertitude."
+        }
+      ]
+    },
+    "pro": {
+      "eyebrow": "PLUS DE MARGE DE MANŒUVRE",
+      "title": "Commencez gratuitement. Allez plus loin avec Vigil Pro.",
+      "copy": "Construisez votre plan à votre rythme. Quand vous souhaitez moins de saisie et une vue plus complète, Pro est là.",
+      "freeLabel": "POUR COMMENCER GRATUITEMENT",
+      "freeCopy": "Établissez un plan clair avec la saisie manuelle et les éléments essentiels que vous choisissez de suivre.",
+      "proLabel": "VIGIL PRO",
+      "benefits": [
+        "Enregistrez vos dépenses par voix, reçus et messages bancaires",
+        "Accédez à l’analyse complète et à des explications plus claires",
+        "Créez des catégories adaptées à vos priorités",
+        "Planifiez avec des outils qui tiennent compte des devises"
+      ],
+      "priceNote": "Choisissez un forfait mensuel ou annuel dans l’app. Apple affiche le prix, les conditions de renouvellement et toute offre disponible avant l’abonnement.",
+      "download": "Télécharger Vigil et découvrir Pro"
+    },
+    "approach": {
+      "eyebrow": "L’APPROCHE VIGIL SPEND",
+      "title": "Un ton bienveillant pour un besoin concret.",
+      "copy": "Vigil Spend aide à prendre conscience, pas à surveiller. Gardez à portée de main les informations utiles et laissez le jugement de côté.",
+      "items": [
+        {
+          "title": "Clair, pas compliqué",
+          "copy": "Voyez ce qui aide pour la prochaine décision, sans mur de chiffres."
+        },
+        {
+          "title": "Encourageant, pas moralisateur",
+          "copy": "Partez de votre réalité, pas de ce que vous pensez devoir faire."
+        },
+        {
+          "title": "Personnel, pas prescriptif",
+          "copy": "Adaptez vos catégories à vos priorités et au rythme de votre mois."
+        }
+      ]
+    },
+    "closing": {
+      "eyebrow": "COMMENCEZ AUJOURD’HUI",
+      "title": "Pas besoin d’un plan parfait pour commencer.",
+      "copy": "Ouvrez Vigil Spend, notez ce qui se passe et laissez une vue plus claire guider votre prochaine décision.",
+      "download": "Télécharger sur l’App Store"
+    },
+    "footer": {
+      "tagline": "Sachez où va votre argent.",
+      "navAria": "Assistance et liens juridiques",
+      "support": "Assistance",
+      "privacy": "Confidentialité",
+      "terms": "Conditions",
+      "eula": "EULA Apple",
+      "deletion": "Suppression du compte"
+    }
+  },
+  "cs": {
+    "meta": {
+      "title": "Vigil Spend — Vědět, kam vaše peníze míří",
+      "description": "Mějte přehled o výdajích, chraňte to důležité a rozhodujte se s větším klidem. S Vigil Spend můžete začít zdarma.",
+      "social": "Klidnější způsob, jak zjistit, co vám zbývá, chránit své priority a rozhodnout se, co dál.",
+      "imageAlt": "Vigil Spend — klidnější vztah k vašim penězům"
+    },
+    "languageLabel": "Zvolit jazyk",
+    "homeAria": "Domů — Vigil Spend",
+    "navAria": "Hlavní navigace",
+    "nav": {
+      "how": "Jak to funguje",
+      "approach": "Náš přístup",
+      "pro": "Vigil Pro",
+      "download": "Stáhnout aplikaci"
+    },
+    "hero": {
+      "eyebrow": "VĚDĚT, KAM VŠE MÍŘÍ",
+      "title": "Uvědomění je první krok ke skutečné změně.",
+      "copy": "Vigil vám pomůže vnímat výdaje, chránit to důležité a vědomě se rozhodovat bez studu, zbytečného hluku a odhadů.",
+      "download": "Stáhnout z App Storu",
+      "how": "Podívat se, jak to funguje",
+      "microcopy": "Začněte dnes. Další rozhodnutí může být jasnější."
+    },
+    "phone": {
+      "aria": "Ukázka obrazovky Vigil Spend se zůstatkem na tento měsíc",
+      "demo": "UKÁZKOVÝ PLÁN",
+      "greeting": "Dobré ráno.",
+      "month": "Přehled vašeho měsíce",
+      "remaining": "ZBÝVÁ NA TENTO MĚSÍC",
+      "buckets": "Vaše obálky",
+      "available": "Zbývá",
+      "everyday": "Každodenní",
+      "plans": "Plány",
+      "flex": "Volné",
+      "captured": "Výdaj zaznamenán"
+    },
+    "signal": {
+      "aria": "Na co se Vigil Spend zaměřuje",
+      "lead": "Vědět, kam peníze míří.",
+      "copy": "A pak se rozhodnout, čemu věnovat pozornost.",
+      "secondary": "Klidný přehled o penězích, které už máte."
+    },
+    "how": {
+      "eyebrow": "JASNĚJŠÍ RYTMUS",
+      "title": "Nejdřív si všimněte. Pak se rozhodněte.",
+      "intro": "Přehled o penězích není další věc, kterou musíte dělat dokonale. Dejte každému nákupu své místo, podívejte se, co zbývá, a rozhodujte se s větším klidem.",
+      "steps": [
+        {
+          "label": "01 / ZÁZNAM",
+          "title": "Zachyťte skutečné výdaje.",
+          "copy": "Zapisujte nákupy průběžně, abyste viděli, jaká rozhodnutí váš měsíc tvoří."
+        },
+        {
+          "label": "02 / PŘEHLED",
+          "title": "Podívejte se, co zbývá.",
+          "copy": "Zkontrolujte své obálky a dostupné peníze ještě před dalším rozhodnutím."
+        },
+        {
+          "label": "03 / VOLBA",
+          "title": "Udělejte další jasný krok.",
+          "copy": "Plánujte, upravte plán nebo pokračujte dál s menší nejistotou."
+        }
+      ]
+    },
+    "pro": {
+      "eyebrow": "VÍCE PROSTORU K ROZHODOVÁNÍ",
+      "title": "Začněte zdarma. S Vigil Pro můžete víc.",
+      "copy": "Sestavte si plán vlastním tempem. Až budete chtít méně ruční práce a úplnější přehled, je tu Pro.",
+      "freeLabel": "ZAČÍNÁTE ZDARMA",
+      "freeCopy": "Vytvořte si jasný plán pomocí ručního zadávání výdajů a základních údajů, které chcete sledovat.",
+      "proLabel": "VIGIL PRO",
+      "benefits": [
+        "Zaznamenávejte výdaje hlasem, účtenkami a bankovními zprávami",
+        "Získejte úplnou Analýzu s přehlednějším vysvětlením",
+        "Vytvářejte obálky podle svých priorit",
+        "Plánujte s nástroji, které zohledňují měny"
+      ],
+      "priceNote": "V aplikaci si vyberete měsíční nebo roční plán. Apple před předplatným zobrazí cenu, podmínky obnovení i případnou dostupnou úvodní nabídku.",
+      "download": "Stáhnout Vigil a prozkoumat Pro"
+    },
+    "approach": {
+      "eyebrow": "PŘÍSTUP VIGIL SPEND",
+      "title": "Laskavý tón pro praktickou věc.",
+      "copy": "Vigil Spend pomáhá získat přehled, ne vás sledovat. Užitečné informace máte po ruce a hodnocení necháváte stranou.",
+      "items": [
+        {
+          "title": "Jasně, ne složitě",
+          "copy": "Uvidíte informace pro další rozhodnutí, ne zeď čísel."
+        },
+        {
+          "title": "Podpora místo napomínání",
+          "copy": "Začněte u skutečného života, ne u toho, jaký by podle vás měl být."
+        },
+        {
+          "title": "Osobně, ne direktivně",
+          "copy": "Uspořádejte obálky podle svých priorit a skutečného rytmu měsíce."
+        }
+      ]
+    },
+    "closing": {
+      "eyebrow": "ZAČNĚTE DNES",
+      "title": "K začátku nepotřebujete dokonalý plán.",
+      "copy": "Otevřete Vigil Spend, zaznamenejte, co se děje, a nechte jasnější přehled ovlivnit další rozhodnutí.",
+      "download": "Stáhnout z App Storu"
+    },
+    "footer": {
+      "tagline": "Vědět, kam vše míří.",
+      "navAria": "Podpora a právní informace",
+      "support": "Podpora",
+      "privacy": "Soukromí",
+      "terms": "Podmínky",
+      "eula": "EULA Apple",
+      "deletion": "Smazání účtu"
+    }
+  },
+  "de": {
+    "meta": {
+      "title": "Vigil Spend — Sieh, wohin dein Geld geht",
+      "description": "Behalte deine Ausgaben im Blick, schütze, was dir wichtig ist, und entscheide klarer. Starte kostenlos mit Vigil Spend.",
+      "social": "Ein ruhigerer Blick darauf, was übrig ist, was dir wichtig ist und was als Nächstes ansteht.",
+      "imageAlt": "Vigil Spend — ein klarerer Umgang mit deinem Geld"
+    },
+    "languageLabel": "Sprache auswählen",
+    "homeAria": "Vigil Spend Startseite",
+    "navAria": "Hauptnavigation",
+    "nav": {
+      "how": "So funktioniert’s",
+      "approach": "Unser Ansatz",
+      "pro": "Vigil Pro",
+      "download": "App laden"
+    },
+    "hero": {
+      "eyebrow": "SIEH, WOHIN ALLES GEHT",
+      "title": "Bewusstsein ist der erste Schritt zu echter Veränderung.",
+      "copy": "Vigil hilft dir, Ausgaben wahrzunehmen, Wichtiges zu schützen und bewusster zu entscheiden—ohne Scham, unnötigen Lärm oder Rätselraten.",
+      "download": "Im App Store laden",
+      "how": "So funktioniert’s",
+      "microcopy": "Fang heute an. Deine nächste Entscheidung kann klarer sein."
+    },
+    "phone": {
+      "aria": "Beispielansicht von Vigil Spend mit dem verbleibenden Monatsbetrag",
+      "demo": "BEISPIELPLAN",
+      "greeting": "Guten Morgen.",
+      "month": "Dein Monat auf einen Blick",
+      "remaining": "DIESEN MONAT ÜBRIG",
+      "buckets": "Deine Töpfe",
+      "available": "Übrig",
+      "everyday": "Alltag",
+      "plans": "Pläne",
+      "flex": "Flexibel",
+      "captured": "Ausgabe erfasst"
+    },
+    "signal": {
+      "aria": "Der Fokus von Vigil Spend",
+      "lead": "Sieh, wohin dein Geld geht.",
+      "copy": "Und entscheide, was als Nächstes wichtig ist.",
+      "secondary": "Ein ruhiger Überblick über das Geld, das du schon hast."
+    },
+    "how": {
+      "eyebrow": "EIN KLARERER RHYTHMUS",
+      "title": "Erst wahrnehmen. Dann entscheiden.",
+      "intro": "Ein bewusster Umgang mit Geld muss nicht perfekt sein. Gib jedem Kauf seinen Platz, sieh, was bleibt, und triff deine nächste Entscheidung mit mehr Ruhe.",
+      "steps": [
+        {
+          "label": "01 / ERFASSEN",
+          "title": "Mach Ausgaben sichtbar.",
+          "copy": "Erfasse Einkäufe unterwegs und sieh, aus welchen Entscheidungen dein Monat besteht."
+        },
+        {
+          "label": "02 / SEHEN",
+          "title": "Prüfe, was noch da ist.",
+          "copy": "Sieh in deine Töpfe und prüfe, was vor der nächsten Wahl verfügbar ist."
+        },
+        {
+          "label": "03 / WÄHLEN",
+          "title": "Mach den nächsten klaren Schritt.",
+          "copy": "Plane, passe etwas an oder mach einfach weiter—mit weniger Rätselraten."
+        }
+      ]
+    },
+    "pro": {
+      "eyebrow": "MEHR SPIELRAUM",
+      "title": "Kostenlos starten. Mit Vigil Pro weiterkommen.",
+      "copy": "Erstelle deinen Plan in deinem Tempo. Wenn du weniger manuell erfassen und mehr verstehen möchtest, ist Pro bereit.",
+      "freeLabel": "KOSTENLOS STARTEN",
+      "freeCopy": "Erstelle mit manuellen Ausgaben und den wichtigsten Angaben, die du verfolgen möchtest, einen klaren Plan.",
+      "proLabel": "VIGIL PRO",
+      "benefits": [
+        "Erfasse Ausgaben per Sprache, Beleg und Banknachricht",
+        "Nutze die vollständige Analyse mit verständlichen Erklärungen",
+        "Erstelle eigene Töpfe für deine Prioritäten",
+        "Plane mit Funktionen, die Währungen berücksichtigen"
+      ],
+      "priceNote": "Wähle in der App ein Monats- oder Jahresabo. Apple zeigt Preis, Verlängerungsbedingungen und verfügbare Einführungsangebote vor dem Abschluss.",
+      "download": "Vigil laden und Pro entdecken"
+    },
+    "approach": {
+      "eyebrow": "DER VIGIL-SPEND-ANSATZ",
+      "title": "Ein freundlicher Ton für eine praktische Aufgabe.",
+      "copy": "Vigil Spend ist für Überblick da, nicht zur Überwachung. Die hilfreichen Teile der Finanzplanung bleiben nah—ohne Wertung.",
+      "items": [
+        {
+          "title": "Klar statt kompliziert",
+          "copy": "Sieh, was für die nächste Entscheidung hilft, statt einer Zahlenwand."
+        },
+        {
+          "title": "Ermutigend statt belehrend",
+          "copy": "Beginne bei deinem echten Alltag, nicht bei einem vermeintlichen Soll."
+        },
+        {
+          "title": "Persönlich statt Vorschrift",
+          "copy": "Richte deine Töpfe nach deinen Prioritäten und deinem Monat aus."
+        }
+      ]
+    },
+    "closing": {
+      "eyebrow": "FANG HEUTE AN",
+      "title": "Du brauchst keinen perfekten Plan für den Anfang.",
+      "copy": "Öffne Vigil Spend, erfasse, was gerade passiert, und lass den klareren Überblick deine nächste Entscheidung formen.",
+      "download": "Im App Store laden"
+    },
+    "footer": {
+      "tagline": "Sieh, wohin alles geht.",
+      "navAria": "Support und rechtliche Hinweise",
+      "support": "Support",
+      "privacy": "Datenschutz",
+      "terms": "Nutzungsbedingungen",
+      "eula": "Apple-EULA",
+      "deletion": "Konto löschen"
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Vigil Spend — Descubre adónde va tu dinero",
+      "description": "Observa tus gastos, protege lo importante y decide con más claridad. Empieza gratis con Vigil Spend.",
+      "social": "Una forma más tranquila de ver lo que queda, cuidar tus prioridades y decidir qué hacer después.",
+      "imageAlt": "Vigil Spend — una relación más clara con tu dinero"
+    },
+    "languageLabel": "Elegir idioma",
+    "homeAria": "Inicio de Vigil Spend",
+    "navAria": "Navegación principal",
+    "nav": {
+      "how": "Cómo funciona",
+      "approach": "Nuestro enfoque",
+      "pro": "Vigil Pro",
+      "download": "Descargar app"
+    },
+    "hero": {
+      "eyebrow": "SABER A DÓNDE VA TODO",
+      "title": "La conciencia es el primer paso hacia un cambio real.",
+      "copy": "Vigil te ayuda a observar tus gastos, proteger lo importante y decidir conscientemente, sin culpa, ruido ni suposiciones.",
+      "download": "Descargar en el App Store",
+      "how": "Descubre cómo funciona",
+      "microcopy": "Empieza hoy. Tu próxima decisión puede ser más clara."
+    },
+    "phone": {
+      "aria": "Ejemplo de pantalla de Vigil Spend con el dinero que queda este mes",
+      "demo": "PLAN DE EJEMPLO",
+      "greeting": "Buenos días.",
+      "month": "Tu mes, de un vistazo",
+      "remaining": "DISPONIBLE ESTE MES",
+      "buckets": "Tus categorías",
+      "available": "Restante",
+      "everyday": "Diario",
+      "plans": "Planes",
+      "flex": "Flexible",
+      "captured": "Gasto registrado"
+    },
+    "signal": {
+      "aria": "El enfoque de Vigil Spend",
+      "lead": "Descubre adónde va tu dinero.",
+      "copy": "Después, decide qué merece tu atención.",
+      "secondary": "Una vista tranquila del dinero que ya tienes."
+    },
+    "how": {
+      "eyebrow": "UN RITMO MÁS CLARO",
+      "title": "Observa primero. Decide después.",
+      "intro": "Entender tu dinero no tiene que ser otra tarea perfecta. Dale un lugar a cada compra, mira lo que queda y elige el siguiente paso con más calma.",
+      "steps": [
+        {
+          "label": "01 / REGISTRA",
+          "title": "Haz visibles tus gastos.",
+          "copy": "Anota tus compras sobre la marcha para ver las decisiones que forman tu mes."
+        },
+        {
+          "label": "02 / MIRA",
+          "title": "Comprueba lo que queda.",
+          "copy": "Consulta tus categorías y lo disponible antes de tomar la siguiente decisión."
+        },
+        {
+          "label": "03 / ELIGE",
+          "title": "Da un siguiente paso claro.",
+          "copy": "Planifica, ajusta o sigue adelante con menos dudas."
+        }
+      ]
+    },
+    "pro": {
+      "eyebrow": "MÁS LIBERTAD PARA DECIDIR",
+      "title": "Empieza gratis. Avanza más con Vigil Pro.",
+      "copy": "Crea tu plan a tu ritmo. Cuando quieras registrar menos a mano y entender mejor tu dinero, Pro está ahí.",
+      "freeLabel": "EMPIEZA GRATIS",
+      "freeCopy": "Crea un plan claro con el registro manual de gastos y lo esencial que quieras controlar.",
+      "proLabel": "VIGIL PRO",
+      "benefits": [
+        "Registra gastos con voz, recibos y mensajes bancarios",
+        "Desbloquea el Análisis completo con explicaciones claras",
+        "Crea categorías personalizadas según tus prioridades",
+        "Planifica con herramientas que tienen en cuenta las divisas"
+      ],
+      "priceNote": "Elige un plan mensual o anual en la app. Apple muestra el precio, la renovación y cualquier oferta introductoria disponible antes de suscribirte.",
+      "download": "Descarga Vigil y descubre Pro"
+    },
+    "approach": {
+      "eyebrow": "LA FORMA VIGIL SPEND",
+      "title": "Un tono amable para algo práctico.",
+      "copy": "Vigil Spend está pensado para darte claridad, no para vigilarte. Mantén cerca lo útil y deja fuera los juicios.",
+      "items": [
+        {
+          "title": "Claridad, no complicaciones",
+          "copy": "Mira lo que ayuda a decidir, sin una pared de números."
+        },
+        {
+          "title": "Ánimo, no reproches",
+          "copy": "Empieza por tu vida real, no por donde crees que deberías estar."
+        },
+        {
+          "title": "A tu medida, no impuesto",
+          "copy": "Organiza tus categorías según tus prioridades y tu mes real."
+        }
+      ]
+    },
+    "closing": {
+      "eyebrow": "EMPIEZA HOY",
+      "title": "No necesitas un plan perfecto para empezar.",
+      "copy": "Abre Vigil Spend, registra lo que ocurre y deja que una imagen más clara guíe tu próxima decisión.",
+      "download": "Descargar en el App Store"
+    },
+    "footer": {
+      "tagline": "Descubre adónde va todo.",
+      "navAria": "Ayuda y enlaces legales",
+      "support": "Ayuda",
+      "privacy": "Privacidad",
+      "terms": "Condiciones",
+      "eula": "EULA de Apple",
+      "deletion": "Eliminar cuenta"
+    }
+  },
+  "ru": {
+    "meta": {
+      "title": "Vigil Spend — Знайте, куда уходят ваши деньги",
+      "description": "Следите за расходами, берегите важное и принимайте более ясные решения. Начните бесплатно с Vigil Spend.",
+      "social": "Спокойный способ увидеть остаток, сохранить приоритеты и решить, что делать дальше.",
+      "imageAlt": "Vigil Spend — более ясные отношения с вашими деньгами"
+    },
+    "languageLabel": "Выбрать язык",
+    "homeAria": "Главная Vigil Spend",
+    "navAria": "Основная навигация",
+    "nav": {
+      "how": "Как это работает",
+      "approach": "Наш подход",
+      "pro": "Vigil Pro",
+      "download": "Скачать приложение"
+    },
+    "hero": {
+      "eyebrow": "ЗНАЙТЕ, КУДА УХОДЯТ ДЕНЬГИ",
+      "title": "Осознанность — первый шаг к настоящим переменам.",
+      "copy": "Vigil помогает замечать расходы, беречь важное и принимать следующие финансовые решения осознанно — без стыда, шума и догадок.",
+      "download": "Загрузить в App Store",
+      "how": "Узнать, как это работает",
+      "microcopy": "Начните сегодня. Следующее решение может стать яснее."
+    },
+    "phone": {
+      "aria": "Пример экрана Vigil Spend с остатком денег на месяц",
+      "demo": "ПРИМЕР ПЛАНА",
+      "greeting": "Доброе утро.",
+      "month": "Ваш месяц одним взглядом",
+      "remaining": "ОСТАЛОСЬ НА ЭТОТ МЕСЯЦ",
+      "buckets": "Ваши категории",
+      "available": "Остаток",
+      "everyday": "Повседневное",
+      "plans": "Планы",
+      "flex": "Свободные траты",
+      "captured": "Расход записан"
+    },
+    "signal": {
+      "aria": "Главная идея Vigil Spend",
+      "lead": "Знайте, куда уходят деньги.",
+      "copy": "А затем решайте, чему уделить внимание.",
+      "secondary": "Спокойный обзор денег, которые у вас уже есть."
+    },
+    "how": {
+      "eyebrow": "БОЛЕЕ ПОНЯТНЫЙ РИТМ",
+      "title": "Сначала замечайте. Потом решайте.",
+      "intro": "Осознанное отношение к деньгам — не ещё одна задача, которую нужно выполнять идеально. Отмечайте покупки, смотрите, что осталось, и выбирайте следующий шаг спокойнее.",
+      "steps": [
+        {
+          "label": "01 / ЗАПИСЬ",
+          "title": "Фиксируйте реальные расходы.",
+          "copy": "Записывайте покупки по мере их появления и видьте решения, из которых складывается месяц."
+        },
+        {
+          "label": "02 / ОБЗОР",
+          "title": "Проверяйте остаток.",
+          "copy": "Смотрите по категориям, что доступно, прежде чем принять следующее решение."
+        },
+        {
+          "label": "03 / ВЫБОР",
+          "title": "Сделайте следующий ясный шаг.",
+          "copy": "Планируйте, меняйте план или просто продолжайте — с меньшими сомнениями."
+        }
+      ]
+    },
+    "pro": {
+      "eyebrow": "БОЛЬШЕ ВОЗМОЖНОСТЕЙ",
+      "title": "Начните бесплатно. Расширьте возможности с Vigil Pro.",
+      "copy": "Составляйте план в своём темпе. Когда захотите тратить меньше времени на ввод и видеть больше, подключите Pro.",
+      "freeLabel": "МОЖНО НАЧАТЬ БЕСПЛАТНО",
+      "freeCopy": "Составьте ясный план с ручным вводом расходов и основными данными, за которыми хотите следить.",
+      "proLabel": "VIGIL PRO",
+      "benefits": [
+        "Записывайте расходы голосом, чеками и сообщениями банка",
+        "Откройте полный Анализ с понятными пояснениями",
+        "Создавайте категории под свои приоритеты",
+        "Планируйте с учётом разных валют"
+      ],
+      "priceNote": "Выберите месячный или годовой план в приложении. До оформления Apple покажет цену, условия продления и доступные вводные предложения.",
+      "download": "Скачайте Vigil и откройте Pro"
+    },
+    "approach": {
+      "eyebrow": "ПОДХОД VIGIL SPEND",
+      "title": "Бережный тон для практичной задачи.",
+      "copy": "Vigil Spend создан для ясности, а не для слежки. Полезная информация рядом, а осуждению здесь нет места.",
+      "items": [
+        {
+          "title": "Ясно, а не сложно",
+          "copy": "Видьте то, что поможет принять следующее решение, без стены цифр."
+        },
+        {
+          "title": "Поддержка, а не упрёки",
+          "copy": "Начните с реальной жизни, а не с представления о том, как должно быть."
+        },
+        {
+          "title": "По-своему, а не по шаблону",
+          "copy": "Настройте категории под свои приоритеты и ритм месяца."
+        }
+      ]
+    },
+    "closing": {
+      "eyebrow": "НАЧНИТЕ СЕГОДНЯ",
+      "title": "Для начала не нужен идеальный план.",
+      "copy": "Откройте Vigil Spend, запишите, что происходит, и позвольте ясной картине подсказать следующий шаг.",
+      "download": "Загрузить в App Store"
+    },
+    "footer": {
+      "tagline": "Знайте, куда уходят деньги.",
+      "navAria": "Поддержка и правовая информация",
+      "support": "Поддержка",
+      "privacy": "Конфиденциальность",
+      "terms": "Условия",
+      "eula": "Лицензия Apple",
+      "deletion": "Удаление аккаунта"
+    }
+  },
+  "ar": {
+    "meta": {
+      "title": "Vigil Spend — اعرف إلى أين تذهب أموالك",
+      "description": "تابع إنفاقك، واحمِ أولوياتك، واتخذ قرارك المالي التالي بوضوح أكبر. ابدأ مجاناً مع Vigil Spend.",
+      "social": "طريقة أكثر هدوءاً لمعرفة ما تبقى، وحماية أولوياتك، واختيار خطوتك التالية.",
+      "imageAlt": "Vigil Spend — علاقة أوضح بأموالك"
+    },
+    "languageLabel": "اختر اللغة",
+    "homeAria": "الصفحة الرئيسية لـ Vigil Spend",
+    "navAria": "التنقل الرئيسي",
+    "nav": {
+      "how": "كيف يعمل",
+      "approach": "نهجنا",
+      "pro": "Vigil Pro",
+      "download": "تنزيل التطبيق"
+    },
+    "hero": {
+      "eyebrow": "اعرف إلى أين يذهب كل شيء",
+      "title": "الوعي هو الخطوة الأولى نحو تغيير حقيقي.",
+      "copy": "يساعدك Vigil على ملاحظة الإنفاق وحماية ما يهمك واتخاذ قرارك المالي التالي بوعي، بعيداً عن اللوم والضجيج والتخمين.",
+      "download": "نزّل من App Store",
+      "how": "اكتشف كيف يعمل",
+      "microcopy": "ابدأ اليوم. يمكن أن يكون قرارك التالي أوضح."
+    },
+    "phone": {
+      "aria": "مثال لشاشة Vigil Spend تعرض المبلغ المتبقي لهذا الشهر",
+      "demo": "خطة تجريبية",
+      "greeting": "صباح الخير.",
+      "month": "ملخص شهرك",
+      "remaining": "المتبقي هذا الشهر",
+      "buckets": "فئاتك",
+      "available": "المتبقي",
+      "everyday": "اليومي",
+      "plans": "الخطط",
+      "flex": "مرن",
+      "captured": "تم تسجيل المصروف"
+    },
+    "signal": {
+      "aria": "محور Vigil Spend",
+      "lead": "اعرف إلى أين تذهب أموالك.",
+      "copy": "ثم اختر ما يستحق اهتمامك بعد ذلك.",
+      "secondary": "نظرة هادئة إلى المال الذي تملكه بالفعل."
+    },
+    "how": {
+      "eyebrow": "إيقاع أوضح",
+      "title": "لاحظ أولاً. قرر بعد ذلك.",
+      "intro": "الوعي المالي ليس مهمة أخرى عليك إتقانها. ضع كل عملية شراء في مكانها، واعرف ما تبقى، واختر خطوتك التالية بمزيد من الهدوء.",
+      "steps": [
+        {
+          "label": "٠١ / سجّل",
+          "title": "اجعل إنفاقك واضحاً.",
+          "copy": "سجّل مشترياتك عند حدوثها لترى القرارات التي يتكوّن منها شهرك."
+        },
+        {
+          "label": "٠٢ / راجع",
+          "title": "اعرف ما تبقى.",
+          "copy": "راجع فئاتك والمبلغ المتاح قبل اتخاذ قرارك التالي."
+        },
+        {
+          "label": "٠٣ / اختر",
+          "title": "اتخذ خطوة تالية واضحة.",
+          "copy": "خطط أو عدّل أو تابع طريقك بثقة أكبر وتخمين أقل."
+        }
+      ]
+    },
+    "pro": {
+      "eyebrow": "مساحة أكبر للاختيار",
+      "title": "ابدأ مجاناً. تقدّم أكثر مع Vigil Pro.",
+      "copy": "أنشئ خطتك على راحتك. وعندما تريد إدخالاً يدوياً أقل وصورة أشمل، ستجد Pro جاهزاً لك.",
+      "freeLabel": "ابدأ مجاناً",
+      "freeCopy": "أنشئ خطة واضحة بإدخال المصروفات يدوياً ومتابعة الأساسيات التي تختارها.",
+      "proLabel": "VIGIL PRO",
+      "benefits": [
+        "سجّل الإنفاق بالصوت والإيصالات والرسائل البنكية",
+        "استخدم التحليل الكامل مع شروحات أوضح",
+        "أنشئ فئات مخصصة حسب أولوياتك",
+        "خطط بأدوات تراعي اختلاف العملات"
+      ],
+      "priceNote": "اختر اشتراكاً شهرياً أو سنوياً داخل التطبيق. تعرض Apple السعر وشروط التجديد وأي عرض تمهيدي متاح قبل الاشتراك.",
+      "download": "نزّل Vigil واكتشف Pro"
+    },
+    "approach": {
+      "eyebrow": "نهج Vigil Spend",
+      "title": "أسلوب هادئ لمهمة عملية.",
+      "copy": "صُمم Vigil Spend لمساعدتك على الفهم، لا لمراقبتك. احتفظ بالمعلومات المفيدة واترك الأحكام جانباً.",
+      "items": [
+        {
+          "title": "وضوح بلا تعقيد",
+          "copy": "اطّلع على ما يساعدك في قرارك التالي، من دون سيل من الأرقام."
+        },
+        {
+          "title": "تشجيع بلا لوم",
+          "copy": "ابدأ من واقعك كما هو، لا من المكان الذي تظن أنك يجب أن تكون فيه."
+        },
+        {
+          "title": "ما يناسبك لا ما يُفرض عليك",
+          "copy": "رتّب فئاتك وفق أولوياتك وطريقة سير شهرك."
+        }
+      ]
+    },
+    "closing": {
+      "eyebrow": "ابدأ اليوم",
+      "title": "لا تحتاج إلى خطة مثالية كي تبدأ.",
+      "copy": "افتح Vigil Spend وسجّل ما يحدث، ودع الصورة الأوضح ترشد قرارك التالي.",
+      "download": "نزّل من App Store"
+    },
+    "footer": {
+      "tagline": "اعرف إلى أين يذهب كل شيء.",
+      "navAria": "الدعم والروابط القانونية",
+      "support": "الدعم",
+      "privacy": "الخصوصية",
+      "terms": "الشروط",
+      "eula": "اتفاقية Apple",
+      "deletion": "حذف الحساب"
+    }
+  }
+}

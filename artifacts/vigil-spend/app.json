@@ -9,10 +9,12 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.vigilspend",
-      "buildNumber": "23",
+      "buildNumber": "28",
       "usesAppleSignIn": true,
       "supportsTablet": true,
       "infoPlist": {
+        "CFBundleDisplayName": "Vigil Spend",
+        "CFBundleName": "Vigil Spend",
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Vigil Spend uses the camera to scan receipts you choose to log.",
         "NSPhotoLibraryUsageDescription": "Vigil Spend reads only the bank screenshots and receipts you select.",

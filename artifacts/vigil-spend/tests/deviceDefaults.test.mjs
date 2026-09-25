@@ -37,6 +37,8 @@ test('language uses the first supported preferred locale and keeps Arabic RTL-ca
   assert.equal(resolveDeviceDefaults([locale('ar-AE', 'ar', 'AE')], countryOptions).language, 'ar');
   assert.equal(resolveDeviceDefaults([locale('fr-FR', 'fr', 'FR')], countryOptions).language, 'fr');
   assert.equal(resolveDeviceDefaults([locale('cs-CZ', 'cs', 'CZ')], countryOptions).language, 'cs');
+  assert.equal(resolveDeviceDefaults([locale('es-ES', 'es', 'ES')], countryOptions).language, 'es');
+  assert.equal(resolveDeviceDefaults([locale('es-MX', null, null)], countryOptions).language, 'es');
   assert.equal(resolveDeviceDefaults([locale('it-IT', 'it', 'IT')], countryOptions).language, 'en');
   assert.equal(resolveDeviceDefaults([], countryOptions).language, 'en');
   assert.equal(

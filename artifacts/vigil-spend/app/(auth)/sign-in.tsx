@@ -4,9 +4,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as AuthSession from 'expo-auth-session';
 import * as Clipboard from 'expo-clipboard';
 import * as WebBrowser from 'expo-web-browser';
-import { useClerk, useSSO } from '@clerk/expo';
+import { useClerk, useSSO, useSignUp } from '@clerk/expo';
 import { useSignInWithApple } from '@clerk/expo/apple';
-import { useSignIn, useSignUp } from '@clerk/expo/legacy';
+import { useSignIn } from '@clerk/expo/legacy';
 import { Ionicons } from '@expo/vector-icons';
 import { Language, ThemeMode, useVigil } from '@/context/AppContext';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
@@ -22,6 +22,7 @@ import {
   type AppleIdentityClaims,
 } from '@/lib/authDiagnostics';
 import { VIGIL_ADMIN_EMAILS } from '@/lib/admin';
+import { summarizeCustomSignup } from '@/lib/customSignupDiagnostics';
 
 WebBrowser.maybeCompleteAuthSession();
 const MIN_PASSWORD_LENGTH = 8;
@@ -80,23 +81,6 @@ function stringStatus(value: unknown): string | null {
 
 function stringList(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
-}
-
-function summarizeCustomSignup(result: unknown) {
-  const candidate = (result && typeof result === 'object' ? result : {}) as {
-    status?: unknown;
-    missingFields?: unknown;
-    createdSessionId?: unknown;
-    verifications?: {
-      emailAddress?: { status?: unknown };
-    };
-  };
-  return {
-    signupStatus: stringStatus(candidate.status),
-    emailVerificationStatus: stringStatus(candidate.verifications?.emailAddress?.status),
-    missingFields: stringList(candidate.missingFields),
-    createdSessionIdPresent: Boolean(candidate.createdSessionId),
-  };
 }
 
 function camelFieldName(field: string): string {
@@ -260,7 +244,7 @@ export default function SignInScreen() {
   const { startSSOFlow } = useSSO();
   const { startAppleAuthenticationFlow } = useSignInWithApple();
   const { isLoaded: signInLoaded, signIn: clerkSignIn } = useSignIn();
-  const { isLoaded: signUpLoaded, signUp } = useSignUp();
+  const { signUp } = useSignUp();
   const { setActive } = useClerk();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const destination = redirect === '/admin' ? '/admin' : '/onboarding';
@@ -283,6 +267,8 @@ export default function SignInScreen() {
   const [resetPassword, setResetPassword] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const [verifiedSignupMissingFields, setVerifiedSignupMissingFields] = useState<string[] | null>(null);
+  const [verifiedSignupMessage, setVerifiedSignupMessage] = useState<string | null>(null);
   const [customLoading, setCustomLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(null);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
@@ -293,8 +279,9 @@ export default function SignInScreen() {
   const versionTapCount = useRef(0);
   const versionTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const signupInFlightRef = useRef(false);
+  const signupResetInFlightRef = useRef(false);
   const verificationInFlightRef = useRef(false);
-  const currentSignupRef = useRef<NonNullable<typeof signUp> | null>(null);
+  const emailVerificationCompletedRef = useRef(false);
   const verificationSessionActivatedRef = useRef(false);
   const canCopyDiagnostics = identity.isAdmin || VIGIL_ADMIN_EMAILS.has(email.trim().toLowerCase());
   useEffect(() => {
@@ -518,6 +505,155 @@ export default function SignInScreen() {
     }
   }, [clerkSignIn, email, signInLoaded, t]);
 
+  const syncCustomSignupNames = useCallback(async () => {
+    const cleanFirstName = firstName.trim();
+    const cleanLastName = lastName.trim();
+    if (!cleanFirstName || !cleanLastName) {
+      throw new Error(t('detailsRequiredCopy'));
+    }
+
+    const profileUpdate: { firstName?: string; lastName?: string } = {};
+    if (signUp.firstName?.trim() !== cleanFirstName) {
+      profileUpdate.firstName = cleanFirstName;
+    }
+    if (signUp.lastName?.trim() !== cleanLastName) {
+      profileUpdate.lastName = cleanLastName;
+    }
+    if (Object.keys(profileUpdate).length > 0) {
+      const { error } = await signUp.update(profileUpdate);
+      if (error) throw error;
+    }
+    if (signUp.firstName?.trim() !== cleanFirstName || signUp.lastName?.trim() !== cleanLastName) {
+      throw new Error(t('signupSessionNotReady'));
+    }
+  }, [firstName, lastName, signUp, t]);
+
+  const finalizeCustomSignup = useCallback(async () => {
+    const cleanFirstName = firstName.trim();
+    const cleanLastName = lastName.trim();
+    if (!cleanFirstName || !cleanLastName) {
+      throw new Error(t('detailsRequiredCopy'));
+    }
+
+    // Required profile fields must be applied while the SignUpFuture is active,
+    // before email verification can consume the signup attempt.
+    const signupState = summarizeCustomSignup(signUp);
+    void recordAuthDiagnostic('password', 'sign-up', 'state', {
+      message: JSON.stringify(signupState),
+    });
+    if (signupState.signupStatus !== 'complete') {
+      throw new Error(t('signupSessionNotReady'));
+    }
+    if (!signupState.createdSessionIdPresent) {
+      setVerifiedSignupMissingFields(signupState.missingFields);
+      setVerifiedSignupMessage(t('signupSessionNotReady'));
+      setMode('verify');
+      return false;
+    }
+    if (verificationSessionActivatedRef.current) return true;
+
+    verificationSessionActivatedRef.current = true;
+    void recordAuthDiagnostic('password', 'session-activation', 'started');
+    try {
+      let finalizationError: unknown = null;
+      try {
+        const { error } = await signUp.finalize({ navigate: () => {} });
+        if (error) finalizationError = error;
+      } catch (error) {
+        finalizationError = error;
+      }
+
+      if (finalizationError) {
+        // Clerk can establish the verified signup session before reporting a
+        // finalization/navigation error. Confirm the live session instead of
+        // retrying activation or telling the user to sign up again.
+        const activeSessionToken = await getToken().catch(() => null);
+        if (!activeSessionToken) throw finalizationError;
+      }
+
+      verificationSessionActivatedRef.current = true;
+      try {
+        await activateClerk();
+      } catch (error) {
+        // The active Clerk session is authoritative; this only persists the
+        // app's provider marker and must not turn a successful signup into an
+        // authentication failure.
+        void recordAuthDiagnostic('password', 'identity-marker', 'error', extractAuthError(error));
+      }
+      await saveProfileNames();
+      setVerifiedSignupMissingFields(null);
+      setVerifiedSignupMessage(null);
+      continueAfterAuth(firstName, themeMode);
+      void recordAuthDiagnostic('password', 'session-activation', 'success', finalizationError
+        ? {
+            code: 'session_already_active',
+            message: 'The verified signup session was already active; continued without retrying activation.',
+          }
+        : {});
+      return true;
+    } catch (error) {
+      verificationSessionActivatedRef.current = false;
+      void recordAuthDiagnostic('password', 'session-activation', 'error', extractAuthError(error));
+      throw error;
+    }
+  }, [activateClerk, continueAfterAuth, firstName, getToken, lastName, saveProfileNames, signUp, t, themeMode]);
+
+  const finishVerifiedSignup = useCallback(async () => {
+    emailVerificationCompletedRef.current = true;
+    setVerificationCode('');
+    setVerifiedSignupMessage(null);
+    setResendMessage(null);
+
+    let signupState = summarizeCustomSignup(signUp);
+    if (signupState.signupStatus === 'complete') {
+      await finalizeCustomSignup();
+      return;
+    }
+
+    if (signupState.signupStatus === 'missing_requirements') {
+      const profileUpdate: { firstName?: string; lastName?: string } = {};
+      if (signupState.missingFields.includes('first_name') && firstName.trim()) {
+        profileUpdate.firstName = firstName.trim();
+      }
+      if (signupState.missingFields.includes('last_name') && lastName.trim()) {
+        profileUpdate.lastName = lastName.trim();
+      }
+
+      if (Object.keys(profileUpdate).length > 0) {
+        const { error } = await signUp.update(profileUpdate);
+        if (error) throw error;
+        signupState = summarizeCustomSignup(signUp);
+        void recordAuthDiagnostic('password', 'sign-up', 'state', {
+          message: JSON.stringify(signupState),
+        });
+        if (signupState.signupStatus === 'complete') {
+          await finalizeCustomSignup();
+          return;
+        }
+      }
+    }
+
+    const missingFields = signupState.missingFields;
+    setVerifiedSignupMissingFields(missingFields);
+    const labels: Record<string, string> = {
+      first_name: t('firstName'),
+      last_name: t('lastName'),
+      email_address: t('emailAddress'),
+      phone_number: t('phoneOptional'),
+      legal_accepted: t('termsConditions'),
+      web3_wallet: 'Web3 wallet',
+      external_account: t('additionalVerification'),
+      protect_check: t('additionalVerification'),
+      other: t('additionalVerification'),
+    };
+    const fields = missingFields.map((field) => labels[field] ?? field.replace(/_/g, ' ')).join(', ')
+      || t('additionalVerification');
+    setVerifiedSignupMessage(t('signupVerifiedNeedsFields').replace('{fields}', fields));
+    void recordAuthDiagnostic('password', 'email-verification', 'state', {
+      message: JSON.stringify(signupState),
+    });
+  }, [finalizeCustomSignup, firstName, lastName, signUp, t]);
+
   const resendVerificationCode = useCallback(async () => {
     if (customLoading || resendCooldown > 0) return;
     try {
@@ -525,9 +661,17 @@ export default function SignInScreen() {
       setAuthMessage(null);
       setResendMessage(null);
       if (mode === 'verify') {
-        const currentSignup = currentSignupRef.current;
-        if (!signUpLoaded || !currentSignup) return;
-        await currentSignup.prepareEmailAddressVerification({ strategy: 'email_code' });
+        if (!isLoaded) return;
+        const currentState = summarizeCustomSignup(signUp);
+        if (emailVerificationCompletedRef.current || currentState.emailVerificationStatus === 'verified') {
+          await finishVerifiedSignup();
+          return;
+        }
+        const { error } = await signUp.verifications.sendEmailCode();
+        if (error) throw error;
+        void recordAuthDiagnostic('password', 'email-verification', 'state', {
+          message: JSON.stringify(summarizeCustomSignup(signUp)),
+        });
       } else if (mode === 'forgotReset') {
         if (!signInLoaded || !clerkSignIn || !email.trim()) return;
         await clerkSignIn.create({
@@ -545,7 +689,7 @@ export default function SignInScreen() {
     } finally {
       setCustomLoading(false);
     }
-  }, [clerkSignIn, customLoading, email, mode, resendCooldown, signInLoaded, signUpLoaded, t]);
+  }, [clerkSignIn, customLoading, email, finishVerifiedSignup, isLoaded, mode, resendCooldown, signInLoaded, signUp, t]);
 
   const completePasswordReset = useCallback(async () => {
     if (!signInLoaded || !clerkSignIn || !setActive) return;
@@ -573,15 +717,62 @@ export default function SignInScreen() {
     }
   }, [activateClerk, clerkSignIn, destination, resetPassword, setActive, signInLoaded, t, verificationCode]);
 
-  const returnToSignIn = useCallback(() => {
+  const returnToSignIn = useCallback(async () => {
+    if (signupResetInFlightRef.current || customLoading || signupInFlightRef.current || verificationInFlightRef.current) return;
+    signupResetInFlightRef.current = true;
+    setCustomLoading(true);
+    void recordAuthDiagnostic('password', 'sign-up-reset', 'started');
+    try {
+      const { error } = await signUp.reset();
+      if (error) throw error;
+      void recordAuthDiagnostic('password', 'sign-up-reset', 'success');
+    } catch (error) {
+      void recordAuthDiagnostic('password', 'sign-up-reset', 'error', extractAuthError(error));
+      setAuthMessage(getAuthErrorMessage(error, t('signupSessionNotReady')));
+      return;
+    } finally {
+      signupResetInFlightRef.current = false;
+      setCustomLoading(false);
+    }
     setMode('signIn');
-    currentSignupRef.current = null;
+    emailVerificationCompletedRef.current = false;
     verificationSessionActivatedRef.current = false;
     setResetPassword('');
     setVerificationCode('');
     setResendCooldown(0);
     setResendMessage(null);
-  }, []);
+    setVerifiedSignupMissingFields(null);
+    setVerifiedSignupMessage(null);
+    setAuthMessage(null);
+  }, [customLoading, signUp, t]);
+
+  const returnToSignupDetails = useCallback(async () => {
+    if (signupResetInFlightRef.current || customLoading || signupInFlightRef.current || verificationInFlightRef.current) return;
+    signupResetInFlightRef.current = true;
+    setCustomLoading(true);
+    void recordAuthDiagnostic('password', 'sign-up-reset', 'started');
+    try {
+      const { error } = await signUp.reset();
+      if (error) throw error;
+      void recordAuthDiagnostic('password', 'sign-up-reset', 'success');
+    } catch (error) {
+      void recordAuthDiagnostic('password', 'sign-up-reset', 'error', extractAuthError(error));
+      setAuthMessage(getAuthErrorMessage(error, t('signupSessionNotReady')));
+      return;
+    } finally {
+      signupResetInFlightRef.current = false;
+      setCustomLoading(false);
+    }
+    emailVerificationCompletedRef.current = false;
+    verificationSessionActivatedRef.current = false;
+    setVerificationCode('');
+    setResendCooldown(0);
+    setResendMessage(null);
+    setVerifiedSignupMissingFields(null);
+    setVerifiedSignupMessage(null);
+    setAuthMessage(null);
+    setMode('signUp');
+  }, [customLoading, signUp, t]);
 
   const signInWithGoogle = useCallback(async () => {
     const providerName = 'Google';
@@ -750,7 +941,7 @@ export default function SignInScreen() {
   }, [activateClerk, continueAfterAuth, startAppleAuthenticationFlow, startSSOFlow, themeMode, verifyVigilBackendSession]);
 
   const createAccount = useCallback(async () => {
-    if (!signUpLoaded || !signUp || !setActive || signupInFlightRef.current) return;
+    if (!isLoaded || signupInFlightRef.current) return;
     if (!firstName.trim() || !lastName.trim() || !email.trim() || password.length < MIN_PASSWORD_LENGTH) {
       Alert.alert(t('detailsRequiredTitle'), t('detailsRequiredCopy'));
       return;
@@ -762,34 +953,55 @@ export default function SignInScreen() {
     try {
       signupInFlightRef.current = true;
       setCustomLoading(true);
+      setAuthMessage(null);
+      setVerifiedSignupMissingFields(null);
+      setVerifiedSignupMessage(null);
       void recordAuthDiagnostic('password', 'sign-up', 'started');
       // Do not let a stale native session become the identity for a new
       // account creation attempt.
       if (isSignedIn) await signOutIdentity();
-      const createdSignup = await signUp.create({
+      const { error: resetError } = await signUp.reset();
+      if (resetError) throw resetError;
+      emailVerificationCompletedRef.current = false;
+      verificationSessionActivatedRef.current = false;
+      const { error } = await signUp.password({
         emailAddress: email.trim().toLowerCase(),
         password,
-         firstName: firstName.trim(),
-         lastName: lastName.trim(),
       });
-      currentSignupRef.current = createdSignup;
-      verificationSessionActivatedRef.current = false;
+      if (error) throw error;
+      if (summarizeCustomSignup(signUp).signupStatus !== 'complete') {
+        void recordAuthDiagnostic('password', 'sign-up-profile', 'started');
+        try {
+          await syncCustomSignupNames();
+          void recordAuthDiagnostic('password', 'sign-up-profile', 'success');
+        } catch (error) {
+          void recordAuthDiagnostic('password', 'sign-up-profile', 'error', extractAuthError(error));
+          throw error;
+        }
+      }
+      let signupState = summarizeCustomSignup(signUp);
       void recordAuthDiagnostic('password', 'sign-up', 'state', {
-        message: JSON.stringify(summarizeCustomSignup(createdSignup)),
+        message: JSON.stringify(signupState),
       });
-      if (createdSignup.status === 'complete' && createdSignup.createdSessionId) {
-        await setActive({ session: createdSignup.createdSessionId });
-        await activateClerk();
-        await saveProfileNames();
-        continueAfterAuth(firstName, themeMode);
-        void recordAuthDiagnostic('password', 'session-activation', 'success');
-      } else {
-        const preparedSignup = await createdSignup.prepareEmailAddressVerification({ strategy: 'email_code' });
-        currentSignupRef.current = preparedSignup ?? createdSignup;
+      if (signupState.signupStatus === 'complete') {
+        await finalizeCustomSignup();
+      } else if (signupState.signupStatus === 'missing_requirements'
+        && signupState.emailVerificationStatus === 'verified') {
+        setMode('verify');
+        await finishVerifiedSignup();
+      } else if (signupState.signupStatus === 'missing_requirements') {
+        const { error: sendError } = await signUp.verifications.sendEmailCode();
+        if (sendError) throw sendError;
+        signupState = summarizeCustomSignup(signUp);
+        void recordAuthDiagnostic('password', 'email-verification', 'state', {
+          message: JSON.stringify(signupState),
+        });
         setVerificationCode('');
         setResendCooldown(30);
         setResendMessage(null);
         setMode('verify');
+      } else {
+        throw new Error(t('signupSessionNotReady'));
       }
     } catch (error) {
       void recordAuthDiagnostic('password', 'sign-up', 'error', extractAuthError(error));
@@ -798,66 +1010,72 @@ export default function SignInScreen() {
       signupInFlightRef.current = false;
       setCustomLoading(false);
     }
-  }, [activateClerk, confirmPassword, continueAfterAuth, email, firstName, isSignedIn, lastName, password, saveProfileNames, setActive, signOutIdentity, signUp, signUpLoaded, themeMode]);
+  }, [confirmPassword, email, finalizeCustomSignup, finishVerifiedSignup, firstName, isLoaded, isSignedIn, lastName, password, signOutIdentity, signUp, syncCustomSignupNames, t]);
 
   const verifyAccount = useCallback(async () => {
-    const currentSignup = currentSignupRef.current;
-    if (!signUpLoaded || !currentSignup || !setActive || verificationInFlightRef.current) {
+    if (!isLoaded || verificationInFlightRef.current) {
       setAuthMessage(t('connectionIssue'));
       return;
     }
-    if (!verificationCode.trim()) {
+    const currentState = summarizeCustomSignup(signUp);
+    const alreadyVerified = emailVerificationCompletedRef.current
+      || currentState.emailVerificationStatus === 'verified'
+      || currentState.signupStatus === 'complete';
+    if (!alreadyVerified && !verificationCode.trim()) {
       setAuthMessage(t('checkVerificationCode'));
       return;
     }
+    let codeVerificationComplete = alreadyVerified;
     try {
       verificationInFlightRef.current = true;
       setCustomLoading(true);
-      void recordAuthDiagnostic('password', 'email-verification', 'started');
-      const result = await currentSignup.attemptEmailAddressVerification({ code: verificationCode.trim() });
-      currentSignupRef.current = result;
-      const signupState = summarizeCustomSignup(result);
-      void recordAuthDiagnostic('password', 'email-verification', 'state', {
-        message: JSON.stringify(signupState),
-      });
-      if (result.status !== 'complete' || !result.createdSessionId) {
-        throw Object.assign(new Error(t('verificationCodeNotReady')), {
-          code: 'signup_incomplete',
-          signupStatus: signupState.signupStatus,
-          emailVerificationStatus: signupState.emailVerificationStatus,
-          missingFields: signupState.missingFields,
+      if (!alreadyVerified) {
+        void recordAuthDiagnostic('password', 'email-verification', 'started');
+        void recordAuthDiagnostic('password', 'sign-up-profile', 'started');
+        try {
+          await syncCustomSignupNames();
+          void recordAuthDiagnostic('password', 'sign-up-profile', 'success');
+        } catch (error) {
+          void recordAuthDiagnostic('password', 'sign-up-profile', 'error', extractAuthError(error));
+          throw error;
+        }
+        const { error } = await signUp.verifications.verifyEmailCode({ code: verificationCode.trim() });
+        const signupState = summarizeCustomSignup(signUp);
+        void recordAuthDiagnostic('password', 'email-verification', 'state', {
+          message: JSON.stringify(signupState),
         });
+        if (error) {
+          const details = extractAuthError(error);
+          void recordAuthDiagnostic('password', 'email-verification', 'error', details);
+          const serverAlreadyVerified = details.code?.toLowerCase().includes('already_verified')
+            || details.message.toLowerCase().includes('already been verified')
+            || details.message.toLowerCase().includes('already verified');
+          if (serverAlreadyVerified || signupState.emailVerificationStatus === 'verified') {
+            emailVerificationCompletedRef.current = true;
+            codeVerificationComplete = true;
+          } else {
+            const rateLimited = details.httpStatus === '429'
+              || details.message.toLowerCase().includes('too many requests');
+            const message = rateLimited ? t('verificationRateLimited') : getAuthErrorMessage(error, t('checkVerificationCode'));
+            setAuthMessage(message);
+            if (Platform.OS !== 'web') Alert.alert(t('verificationFailed'), message);
+            return;
+          }
+        } else {
+          emailVerificationCompletedRef.current = true;
+          codeVerificationComplete = true;
+        }
       }
-      if (verificationSessionActivatedRef.current) return;
-      verificationSessionActivatedRef.current = true;
-      await setActive({ session: result.createdSessionId });
-      await activateClerk();
-      await saveProfileNames();
-      continueAfterAuth(firstName, themeMode);
-      void recordAuthDiagnostic('password', 'email-verification', 'success');
+
+      if (codeVerificationComplete) {
+        await finishVerifiedSignup();
+        void recordAuthDiagnostic('password', 'email-verification', 'success');
+      }
     } catch (error) {
       const details = extractAuthError(error);
-      void recordAuthDiagnostic('password', 'email-verification', 'error', details);
-      const alreadyVerified = details.message.toLocaleLowerCase().includes('already been verified')
-        || details.message.toLocaleLowerCase().includes('already verified');
-      const rateLimited = details.httpStatus === '429' || details.message.toLocaleLowerCase().includes('too many requests');
-      // Clerk can return an already-verified error when a second UI callback
-      // races the first request. Inspect the current resource once; never
-      // submit the code again or retry automatically.
-      const currentSignupState = summarizeCustomSignup(currentSignup);
-      void recordAuthDiagnostic('password', 'email-verification', 'state', {
-        message: JSON.stringify(currentSignupState),
-      });
-      if (alreadyVerified && currentSignup.status === 'complete' && currentSignup.createdSessionId) {
-        if (verificationSessionActivatedRef.current) return;
-        verificationSessionActivatedRef.current = true;
-        await setActive({ session: currentSignup.createdSessionId });
-        await activateClerk();
-        await saveProfileNames();
-        continueAfterAuth(firstName, themeMode);
-        void recordAuthDiagnostic('password', 'email-verification', 'success', { message: 'Already verified; activated completed signup.' });
-        return;
-      }
+      const action = codeVerificationComplete ? 'sign-up' : 'email-verification';
+      void recordAuthDiagnostic('password', action, 'error', details);
+      const rateLimited = details.httpStatus === '429' || details.message.toLowerCase().includes('too many requests');
       const message = rateLimited ? t('verificationRateLimited') : getAuthErrorMessage(error, t('checkVerificationCode'));
       setAuthMessage(message);
       if (Platform.OS !== 'web') Alert.alert(t('verificationFailed'), message);
@@ -865,7 +1083,7 @@ export default function SignInScreen() {
       verificationInFlightRef.current = false;
       setCustomLoading(false);
     }
-  }, [activateClerk, continueAfterAuth, firstName, saveProfileNames, setActive, signUpLoaded, t, themeMode, verificationCode]);
+  }, [finishVerifiedSignup, isLoaded, signUp, syncCustomSignupNames, t, verificationCode]);
 
   const signOutAndSwitchAccount = useCallback(async () => {
     try {
@@ -1101,7 +1319,12 @@ export default function SignInScreen() {
           <Text style={[styles.subtitle, { color: palette.mutedForeground }]}>{mode === 'verify' ? `${t('checkEmail')}: ${email}` : t('authCopy')}</Text>
            <View nativeID="clerk-captcha" style={styles.captchaSlot} />
           {authMessage && <Text accessibilityRole="alert" style={[styles.authMessage, { color: palette.destructive }]}>{authMessage}</Text>}
-          {mode === 'verify' ? (
+          {verifiedSignupMessage && <Text accessibilityRole="alert" style={[styles.authMessage, { color: palette.primary }]}>{verifiedSignupMessage}</Text>}
+          {mode === 'verify' ? verifiedSignupMissingFields !== null ? (
+            <Pressable onPress={returnToSignIn} style={styles.backButton}>
+              <Text style={[styles.backText, { color: palette.primary }]}>{t('backToSignIn')}</Text>
+            </Pressable>
+          ) : (
             <>
                <TextInput
                  testID="email-verification-code"
@@ -1129,7 +1352,7 @@ export default function SignInScreen() {
                    {resendCooldown > 0 ? t('resendCodeIn').replace('{seconds}', String(resendCooldown)) : t('resendCode')}
                  </Text>
                </Pressable>
-                <Pressable onPress={() => { setAuthMessage(null); setMode('signUp'); }} style={styles.backButton}><Text style={[styles.backText, { color: palette.primary }]}>{t('backToAccountDetails')}</Text></Pressable>
+                <Pressable onPress={returnToSignupDetails} style={styles.backButton}><Text style={[styles.backText, { color: palette.primary }]}>{t('backToAccountDetails')}</Text></Pressable>
             </>
           ) : (
             <>

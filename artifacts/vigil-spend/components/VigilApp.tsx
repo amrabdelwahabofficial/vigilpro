@@ -1636,7 +1636,6 @@ function SettingsScreen({ onSubscribe, onRequestReview }: { onSubscribe: () => v
   const [resetVisible, setResetVisible] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [doubleTapVisible, setDoubleTapVisible] = useState(false);
-  const [diagnosticsUnlocked, setDiagnosticsUnlocked] = useState(false);
   const diagnosticsTapCount = useRef(0);
   const version = appVersionBuild();
   const languages: { id: Language; label: string }[] = [{ id: 'en', label: 'English' }, { id: 'fr', label: 'Français' }, { id: 'cs', label: 'Čeština' }, { id: 'de', label: 'Deutsch' }, { id: 'es', label: 'Español' }, { id: 'ru', label: 'Русский' }, { id: 'ar', label: 'العربية' }];
@@ -1698,11 +1697,10 @@ function SettingsScreen({ onSubscribe, onRequestReview }: { onSubscribe: () => v
     }
   } }]);
   const tapVersion = () => {
-    if (!isAdmin || diagnosticsUnlocked) return;
     diagnosticsTapCount.current += 1;
     if (diagnosticsTapCount.current >= 5) {
-      setDiagnosticsUnlocked(true);
       diagnosticsTapCount.current = 0;
+      router.push('/diagnostics');
     }
   };
   return <>
@@ -1743,9 +1741,8 @@ function SettingsScreen({ onSubscribe, onRequestReview }: { onSubscribe: () => v
     <Pressable testID="delete-all-data" onPress={resetEverything} style={({ pressed }) => pressStyle(pressed, [styles.settingsLink, { borderColor: palette.border, backgroundColor: palette.card }])}><Ionicons name="refresh-outline" size={19} color={palette.primary} /><View style={{ flex: 1 }}><Text style={[styles.settingTitle, { color: palette.foreground }]}>{t('deleteAllData')}</Text><Text style={[styles.settingCopy, { color: palette.mutedForeground }]}>{t('deleteAllDataCopy')}</Text></View><Ionicons name="chevron-forward" size={16} color={palette.mutedForeground} /></Pressable>
     <Pressable testID="delete-account" onPress={deleteAccount} style={({ pressed }) => pressStyle(pressed, [styles.settingsLink, { borderColor: palette.destructive, backgroundColor: palette.card }])}><Ionicons name="person-remove-outline" size={19} color={palette.destructive} /><View style={{ flex: 1 }}><Text style={[styles.settingTitle, { color: palette.destructive }]}>{t('deleteAccount')}</Text><Text style={[styles.settingCopy, { color: palette.mutedForeground }]}>{t('deleteAccountCopy')}</Text></View><Ionicons name="chevron-forward" size={16} color={palette.destructive} /></Pressable>
       <Pressable testID="diagnostics-version-tap" onPress={tapVersion} style={({ pressed }) => pressStyle(pressed, [styles.appVersionCard, { borderColor: palette.border, backgroundColor: palette.card }])}>
-        <View style={styles.appVersionRow}><View style={[styles.appVersionIcon, { backgroundColor: palette.secondary }]}><Ionicons name="build-outline" size={18} color={palette.primary} /></View><View style={{ flex: 1 }}><Text style={[styles.settingTitle, { color: palette.foreground }]}>Vigil Spend</Text><Text style={[styles.settingCopy, { color: palette.mutedForeground }]}>Version {version.version} · Build {version.build}</Text></View><Text style={[styles.appVersionHint, { color: palette.mutedForeground }]}>{isAdmin && !diagnosticsUnlocked ? 'Tap 5×' : ''}</Text></View>
+        <View style={styles.appVersionRow}><View style={[styles.appVersionIcon, { backgroundColor: palette.secondary }]}><Ionicons name="build-outline" size={18} color={palette.primary} /></View><View style={{ flex: 1 }}><Text style={[styles.settingTitle, { color: palette.foreground }]}>Vigil Spend</Text><Text style={[styles.settingCopy, { color: palette.mutedForeground }]}>Version {version.version} · Build {version.build}</Text></View></View>
       </Pressable>
-      {isAdmin && diagnosticsUnlocked && <Pressable testID="open-diagnostics" onPress={() => router.push('/diagnostics')} style={({ pressed }) => pressStyle(pressed, [styles.settingsLink, { borderColor: palette.primary, backgroundColor: palette.card }])}><Ionicons name="bug-outline" size={19} color={palette.primary} /><View style={{ flex: 1 }}><Text style={[styles.settingTitle, { color: palette.foreground }]}>Diagnostics</Text><Text style={[styles.settingCopy, { color: palette.mutedForeground }]}>Review sign-in and RevenueCat events without exposing credentials.</Text></View><Ionicons name="chevron-forward" size={16} color={palette.primary} /></Pressable>}
         <View style={styles.legalRow}><Pressable testID="privacy-link" onPress={() => router.push('/legal?document=privacy')}><Text style={[styles.legalText, { color: palette.mutedForeground }]}>{t('privacyPolicy')}</Text></Pressable><Pressable testID="terms-link" onPress={() => router.push('/legal?document=terms')}><Text style={[styles.legalText, { color: palette.mutedForeground }]}>{t('termsConditions')}</Text></Pressable><Pressable testID="terms-use-link" onPress={() => router.push('/legal?document=use')}><Text style={[styles.legalText, { color: palette.mutedForeground }]}>{t('termsOfUse')}</Text></Pressable></View>
    </ScrollView>
     <DoubleTapLoggingModal visible={doubleTapVisible} onClose={() => setDoubleTapVisible(false)} />
@@ -1935,7 +1932,6 @@ const styles = StyleSheet.create({
   appVersionCard: { borderWidth: 1, borderRadius: 17, padding: 13, gap: 10, marginTop: 12 },
   appVersionRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   appVersionIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  appVersionHint: { fontSize: 10, fontWeight: '600', textAlign: 'right', maxWidth: 92 },
   copyDiagnosticsButton: { minHeight: 42, borderWidth: 1, borderRadius: 13, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   copyDiagnosticsText: { fontSize: 13, fontWeight: '600' },
   avatar: { width: 47, height: 47, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },

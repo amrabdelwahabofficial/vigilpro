@@ -14,6 +14,12 @@ import {
   purchaseWasCancelled,
 } from '@/lib/subscription';
 import { recordRevenueCatDiagnostic, revenueCatErrorDetails } from '@/lib/authDiagnostics';
+import {
+  createRuntimeCredentialProof,
+  getClerkRuntimePublishableKey,
+  isVigilProductionBuild,
+  PRODUCTION_REVENUECAT_IOS_API_KEY,
+} from '@/lib/runtimeCredentials';
 
 export type PurchaseOutcome = 'purchased' | 'cancelled' | 'not_active';
 export type SubscriptionError = 'configuration' | 'identity' | 'catalog' | null;
@@ -53,13 +59,20 @@ const SubscriptionContext = createContext<SubscriptionContextValue | null>(null)
 
 let configuredRevenueCatKey: string | null = null;
 let synchronizedRevenueCatUserId: string | null = null;
+let runtimeCredentialProofLogged = false;
 const enqueueRevenueCat = createSerializedTaskQueue();
 function revenueCatKey() {
-  // Expo Go and web Preview API Mode use the Test Store key. Native
-  // development builds still talk to StoreKit, so they must use the iOS App
-  // Store key even when __DEV__ is true. This also prevents a stale Test Store
-  // key from breaking native development builds with "Invalid API Key".
+  const isProduction = isVigilProductionBuild();
   const isExpoGo = Constants.appOwnership === 'expo';
+
+  // Production never falls back to the shared Test Store key. Native iOS
+  // Production uses the pinned App Store key; web has no App Store key.
+  if (isProduction) {
+    return Platform.OS === 'ios' ? PRODUCTION_REVENUECAT_IOS_API_KEY : undefined;
+  }
+
+  // Expo Go and web Preview API Mode use the Test Store key. Native
+  // development builds still talk to StoreKit, even when __DEV__ is true.
   if ((Platform.OS === 'web' || isExpoGo) && process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY) {
     return process.env.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY;
   }
@@ -73,7 +86,14 @@ function revenueCatKey() {
 async function configurePurchasesInQueue(key: string) {
   Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.VERBOSE : LOG_LEVEL.INFO);
   const alreadyConfigured = configuredRevenueCatKey === key || await Purchases.isConfigured();
-  if (!alreadyConfigured) Purchases.configure({ apiKey: key });
+  if (!alreadyConfigured) {
+    if (isVigilProductionBuild() && !runtimeCredentialProofLogged) {
+      const proof = await createRuntimeCredentialProof(getClerkRuntimePublishableKey(), key);
+      console.info('[Vigil] runtime credential proof', proof);
+      runtimeCredentialProofLogged = true;
+    }
+    Purchases.configure({ apiKey: key });
+  }
   configuredRevenueCatKey = key;
   void recordRevenueCatDiagnostic('startup', 'configure', 'success', {
     configured: 'true',

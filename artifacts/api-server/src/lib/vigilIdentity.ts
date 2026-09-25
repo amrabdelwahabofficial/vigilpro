@@ -2,6 +2,7 @@ import { createCipheriv, createDecipheriv, createHash, createHmac, createPrivate
 import { pool } from "@workspace/db";
 import { verifyToken } from "@clerk/backend";
 import type { Request, Response } from "express";
+import { getClerkSecretKey } from "./clerkConfig.ts";
 
 const APPLE_ISSUER = "https://appleid.apple.com";
 const APPLE_JWKS_URL = `${APPLE_ISSUER}/auth/keys`;
@@ -20,6 +21,7 @@ export type VigilIdentity = {
   email: string | null;
   displayName: string | null;
   isAdmin: boolean;
+  proOverride: boolean;
 };
 
 type AppleServerConfig = {
@@ -482,6 +484,7 @@ export async function completeAppleSignIn(input: { challengeId: string; identity
         email: account.email,
         displayName: [account.first_name ?? firstName, account.last_name ?? lastName].filter(Boolean).join(" ") || null,
         isAdmin: false,
+        proOverride: false,
       },
     };
   } catch (error) {
@@ -499,8 +502,8 @@ export async function authenticateVigilRequest(req: Request, res: Response): Pro
     return null;
   }
   if (!token.includes(".")) {
-    const session = await pool.query<{ id: string; account_id: string; email: string | null; first_name: string | null; last_name: string | null }>(
-      `SELECT s.id, a.id AS account_id, a.email, a.first_name, a.last_name
+    const session = await pool.query<{ id: string; account_id: string; email: string | null; first_name: string | null; last_name: string | null; pro_override: boolean }>(
+      `SELECT s.id, a.id AS account_id, a.email, a.first_name, a.last_name, a.pro_override
        FROM vigil_apple_sessions s
        JOIN vigil_apple_accounts a ON a.id = s.account_id
        WHERE s.token_hash = $1 AND s.revoked_at IS NULL AND s.expires_at > NOW() AND a.deleted_at IS NULL`,
@@ -518,11 +521,12 @@ export async function authenticateVigilRequest(req: Request, res: Response): Pro
       email: row.email,
       displayName: [row.first_name, row.last_name].filter(Boolean).join(" ") || null,
       isAdmin: false,
+      proOverride: row.pro_override === true,
     };
   }
   try {
-    const payload = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
-    return { userId: payload.sub, provider: "clerk", email: null, displayName: null, isAdmin: false };
+    const payload = await verifyToken(token, { secretKey: getClerkSecretKey() });
+    return { userId: payload.sub, provider: "clerk", email: null, displayName: null, isAdmin: false, proOverride: false };
   } catch {
     res.status(401).json({ message: "Invalid or expired session" });
     return null;
@@ -533,28 +537,28 @@ export async function signOutAppleSession(token: string) {
   await pool.query("UPDATE vigil_apple_sessions SET revoked_at = NOW() WHERE token_hash = $1 AND revoked_at IS NULL", [opaqueTokenHash(token)]);
 }
 
-export async function deleteAppleAccount(identity: VigilIdentity) {
-  if (identity.provider !== "apple") throw new Error("This endpoint only deletes Apple accounts");
+export async function deleteAppleAccountById(accountId: string) {
   const config = appleServerConfig();
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     const account = await client.query<{ id: string }>(
       "SELECT id FROM vigil_apple_accounts WHERE id = $1 AND deleted_at IS NULL FOR UPDATE",
-      [identity.userId],
+      [accountId],
     );
     if (!account.rows[0]) throw new Error("Account not found");
     const refreshTokens = await client.query<{ id: string; client_id: string | null; ciphertext: string }>(
       "SELECT id, client_id, ciphertext FROM vigil_apple_refresh_tokens WHERE account_id = $1 AND revoked_at IS NULL FOR UPDATE",
-      [identity.userId],
+      [accountId],
     );
+    await client.query("DELETE FROM vigil_support_requests WHERE user_id = $1", [accountId]);
     for (const token of refreshTokens.rows) {
       const tokenConfig = token.client_id ? appleServerConfig(token.client_id) : config;
       await revokeAppleRefreshToken(decryptRefreshToken(token.ciphertext, config.encryptionKey), tokenConfig);
       await client.query("UPDATE vigil_apple_refresh_tokens SET revoked_at = NOW() WHERE id = $1", [token.id]);
     }
-    await client.query("UPDATE vigil_apple_sessions SET revoked_at = NOW() WHERE account_id = $1 AND revoked_at IS NULL", [identity.userId]);
-    await client.query("UPDATE vigil_apple_accounts SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL", [identity.userId]);
+    await client.query("UPDATE vigil_apple_sessions SET revoked_at = NOW() WHERE account_id = $1 AND revoked_at IS NULL", [accountId]);
+    await client.query("UPDATE vigil_apple_accounts SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL", [accountId]);
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
@@ -562,6 +566,11 @@ export async function deleteAppleAccount(identity: VigilIdentity) {
   } finally {
     client.release();
   }
+}
+
+export async function deleteAppleAccount(identity: VigilIdentity) {
+  if (identity.provider !== "apple") throw new Error("This account is managed by Clerk");
+  await deleteAppleAccountById(identity.userId);
 }
 
 export function appleAuthFailure(res: Response, error: unknown) {

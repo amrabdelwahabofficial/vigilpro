@@ -1,6 +1,7 @@
 import type { IncomingHttpHeaders } from "http";
 import type { RequestHandler } from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
+import { getClerkSecretKey, isProductionClerkMode } from "../lib/clerkConfig";
 
 const CLERK_FAPI = "https://frontend-api.clerk.dev";
 export const CLERK_PROXY_PATH = "/api/__clerk";
@@ -15,11 +16,11 @@ export function getClerkProxyHost(req: {
 }
 
 export function clerkProxyMiddleware(): RequestHandler {
-  if (process.env.NODE_ENV !== "production") {
+  if (isProductionClerkMode()) {
     return (_req, _res, next) => next();
   }
 
-  const secretKey = process.env.CLERK_SECRET_KEY;
+  const secretKey = getClerkSecretKey();
   if (!secretKey) {
     return (_req, _res, next) => next();
   }

@@ -6,6 +6,7 @@ import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth, useClerk, useUser } from '@clerk/expo';
 import { hasVigilProOverride, isVigilAdmin } from '@/lib/admin';
+import { extractAuthError, recordAuthDiagnostic } from '@/lib/authDiagnostics';
 
 const APPLE_SESSION_KEY = 'vigil-apple-session-v1';
 const ACTIVE_PROVIDER_KEY = 'vigil-active-provider-v1';
@@ -285,32 +286,100 @@ export function IdentityProvider({ children }: { children: React.ReactNode }) {
 
   const deleteAccount = useCallback(async () => {
     if (appleSession) {
-      const response = await fetch(apiUrl('/api/vigil/apple/account'), {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${appleSession.sessionToken}` },
-      });
-      if (!response.ok) {
-        const body = await response.json().catch(() => null) as { message?: string } | null;
-        throw new Error(body?.message || 'Account deletion could not be completed.');
+      void recordAuthDiagnostic('account-deletion', 'apple-account', 'started');
+      try {
+        const response = await fetch(apiUrl('/api/vigil/apple/account'), {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${appleSession.sessionToken}` },
+        });
+        if (!response.ok) {
+          const body = await response.json().catch(() => null) as { message?: string } | null;
+          const error = Object.assign(
+            new Error(body?.message || 'Account deletion could not be completed.'),
+            {
+              status: response.status,
+              requestId: response.headers.get('x-request-id')
+                || response.headers.get('x-clerk-request-id')
+                || undefined,
+            },
+          );
+          throw error;
+        }
+        void recordAuthDiagnostic('account-deletion', 'apple-account', 'success', {
+          httpStatus: String(response.status),
+        });
+      } catch (error) {
+        void recordAuthDiagnostic('account-deletion', 'apple-account', 'error', extractAuthError(error));
+        throw error;
       }
       await persistActiveProvider('signed-out');
       await clearAppleSession();
       return;
     }
-    if (!clerkUser) throw new Error('No signed-in account was found.');
-    const token = await getToken();
-    if (!token) throw new Error('The secure session is not ready. Please try again.');
-    const supportResponse = await fetch(apiUrl('/api/vigil/support-requests/me'), {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    if (!clerkUser) {
+      const error = new Error('No signed-in account was found.');
+      void recordAuthDiagnostic('account-deletion', 'clerk-user', 'error', extractAuthError(error));
+      throw error;
+    }
+    void recordAuthDiagnostic('account-deletion', 'clerk-session-token', 'started');
+    let token: string | null;
+    try {
+      token = await getToken();
+    } catch (error) {
+      void recordAuthDiagnostic('account-deletion', 'clerk-session-token', 'error', extractAuthError(error));
+      throw error;
+    }
+    if (!token) {
+      const error = new Error('The secure session is not ready. Please try again.');
+      void recordAuthDiagnostic('account-deletion', 'clerk-session-token', 'error', extractAuthError(error));
+      throw error;
+    }
+    void recordAuthDiagnostic('account-deletion', 'clerk-session-token', 'success');
+    void recordAuthDiagnostic('account-deletion', 'support-data', 'started');
+    let supportResponse: Response;
+    try {
+      supportResponse = await fetch(apiUrl('/api/vigil/support-requests/me'), {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (error) {
+      void recordAuthDiagnostic('account-deletion', 'support-data', 'error', extractAuthError(error));
+      throw error;
+    }
     if (!supportResponse.ok) {
       const body = await supportResponse.json().catch(() => null) as { message?: string } | null;
-      throw new Error(body?.message || 'Support data could not be deleted. Please try again.');
+      const error = Object.assign(
+        new Error(body?.message || 'Support data could not be deleted. Please try again.'),
+        {
+          status: supportResponse.status,
+          requestId: supportResponse.headers.get('x-request-id')
+            || supportResponse.headers.get('x-clerk-request-id')
+            || undefined,
+        },
+      );
+      void recordAuthDiagnostic('account-deletion', 'support-data', 'error', extractAuthError(error));
+      throw error;
     }
-    await clerkUser.delete();
-    await clerkSignOut();
-    await persistActiveProvider('signed-out');
+    void recordAuthDiagnostic('account-deletion', 'support-data', 'success', {
+      httpStatus: String(supportResponse.status),
+    });
+    void recordAuthDiagnostic('account-deletion', 'clerk-user', 'started');
+    try {
+      await clerkUser.delete();
+      void recordAuthDiagnostic('account-deletion', 'clerk-user', 'success');
+    } catch (error) {
+      void recordAuthDiagnostic('account-deletion', 'clerk-user', 'error', extractAuthError(error));
+      throw error;
+    }
+    void recordAuthDiagnostic('account-deletion', 'session-cleanup', 'started');
+    try {
+      await clerkSignOut();
+      await persistActiveProvider('signed-out');
+      void recordAuthDiagnostic('account-deletion', 'session-cleanup', 'success');
+    } catch (error) {
+      void recordAuthDiagnostic('account-deletion', 'session-cleanup', 'error', extractAuthError(error));
+      throw error;
+    }
   }, [appleSession, clearAppleSession, clerkSignOut, clerkUser, getToken, persistActiveProvider]);
 
   const activateClerk = useCallback(async () => {

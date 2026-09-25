@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import test from 'node:test';
 import {
@@ -139,16 +140,31 @@ test('subscription surfaces use live package prices and keep the configured CTA 
   assert.match(modalSource, /onUnlock=\{unlockPro\}/);
 });
 
-test('native iOS builds use the App Store key instead of a stale Test Store key', () => {
+test('Production subscriptions cannot fall back to shared Development or Test Store keys', () => {
   const subscriptionSource = fs.readFileSync(new URL('../context/SubscriptionContext.tsx', import.meta.url), 'utf8');
+  const runtimeCredentialsSource = fs.readFileSync(new URL('../lib/runtimeCredentials.ts', import.meta.url), 'utf8');
   assert.match(subscriptionSource, /import Constants from 'expo-constants'/);
   assert.match(subscriptionSource, /Constants\.appOwnership === 'expo'/);
+  assert.match(subscriptionSource, /isVigilProductionBuild\(\)/);
+  assert.match(runtimeCredentialsSource, /EXPO_PUBLIC_VIGIL_BUILD_PROFILE\?\.trim\(\)\.toLowerCase\(\) === 'production'/);
+  assert.match(subscriptionSource, /if \(isProduction\)/);
+  assert.match(subscriptionSource, /Platform\.OS === 'ios' \? PRODUCTION_REVENUECAT_IOS_API_KEY : undefined/);
+  assert.doesNotMatch(subscriptionSource, /if \(isProduction\)[\s\S]{0,160}process\.env\.EXPO_PUBLIC_REVENUECAT_/);
   assert.match(subscriptionSource, /Platform\.OS === 'web' \|\| isExpoGo/);
-  assert.match(subscriptionSource, /if \(Platform\.OS === 'ios'\) return process\.env\.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY/);
   assert.match(subscriptionSource, /if \(Platform\.OS === 'android'\) return undefined/);
-  assert.match(easConfig.build.production.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY, /^appl_[A-Za-z0-9]+$/);
-  assert.equal(easConfig.build.development.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY, easConfig.build.production.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY);
-  assert.equal(easConfig.build.preview.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY, easConfig.build.production.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY);
+  const runtimeRevenueCatKey = runtimeCredentialsSource.match(/PRODUCTION_REVENUECAT_IOS_API_KEY\s*=\s*'([^']+)'/)?.[1];
+  assert.ok(runtimeRevenueCatKey);
+  const runtimeRevenueCatFingerprint = createHash('sha256').update(runtimeRevenueCatKey).digest('hex').slice(0, 12);
+  assert.equal(runtimeRevenueCatFingerprint, '97dbf0564339');
+  assert.match(subscriptionSource, /createRuntimeCredentialProof/);
+  assert.match(subscriptionSource, /runtime credential proof/);
+  assert.equal(easConfig.build.production.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY.startsWith('appl_'), true);
+  assert.equal(easConfig.build.development.environment, 'development');
+  assert.equal(easConfig.build.preview.environment, 'preview');
+  assert.equal(easConfig.build.production.environment, 'production');
+  assert.match(buildScriptSource, /resolveProductionRevenueCatConfig/);
+  assert.match(buildScriptSource, /build\.production\.env\.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY/);
+  assert.match(buildScriptSource, /EXPO_PUBLIC_REVENUECAT_TEST_API_KEY: revenueCatTestKey/);
   assert.doesNotMatch(replitSource, /EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY/);
   assert.doesNotMatch(buildScriptSource, /EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY/);
 });
@@ -199,17 +215,19 @@ test('add income keeps its amount field and save action keyboard-aware', () => {
 
 test('onboarding builds a personalized plan before showing the paywall', () => {
   const onboardingSource = fs.readFileSync(new URL('../app/onboarding.tsx', import.meta.url), 'utf8');
-  const localizationSource = fs.readFileSync(new URL('../lib/localization.ts', import.meta.url), 'utf8');
+  const onboardingCopySource = fs.readFileSync(new URL('../lib/onboardingFlowCopy.ts', import.meta.url), 'utf8');
   assert.match(onboardingSource, /const \[personalizing, setPersonalizing\] = useState\(false\)/);
   assert.match(onboardingSource, /setPersonalizing\(true\)/);
-  assert.match(onboardingSource, /setPersonalizing\(false\);\s*setStep\(5\)/);
-  assert.match(onboardingSource, /const PERSONALIZATION_DURATION_MS = 10000/);
+  assert.match(onboardingSource, /setPersonalizing\(false\);\s*setStep\(RESULT_STEP\)/);
+  assert.match(onboardingSource, /const PERSONALIZATION_DURATION_MS = 1800/);
   assert.match(onboardingSource, /Animated\.timing\(personalizationProgress/);
   assert.match(onboardingSource, /accessibilityRole="progressbar"/);
   assert.match(onboardingSource, /personalizationProgress\.interpolate/);
-  assert.match(onboardingSource, /personalizingTitle/);
-  assert.match(onboardingSource, /personalizingAnswerLabel/);
-  assert.match(localizationSource, /personalizingCopy: 'We’re turning what you shared into a plan/);
+  assert.match(onboardingSource, /t\('onboardingFlowTransition1'\)/);
+  assert.match(onboardingSource, /setStep\(PAYWALL_STEP\)/);
+  assert.match(onboardingCopySource, /onboardingFlowTransition1:/);
+  assert.match(onboardingCopySource, /onboardingFlowTransition2:/);
+  assert.match(onboardingCopySource, /onboardingFlowTransition3:/);
 });
 
 test('transaction confirmations reflect the saved transaction details', () => {

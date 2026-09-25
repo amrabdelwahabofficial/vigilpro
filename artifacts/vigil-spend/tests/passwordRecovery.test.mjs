@@ -4,10 +4,12 @@ import test from 'node:test';
 import { extendedMessage } from '../lib/localization.ts';
 
 const signInSource = fs.readFileSync(new URL('../app/(auth)/sign-in.tsx', import.meta.url), 'utf8');
+const signupDiagnosticsSource = fs.readFileSync(new URL('../lib/customSignupDiagnostics.ts', import.meta.url), 'utf8');
 const ssoCallbackSource = fs.readFileSync(new URL('../app/sso-callback.tsx', import.meta.url), 'utf8');
 const identitySource = fs.readFileSync(new URL('../context/IdentityContext.tsx', import.meta.url), 'utf8');
 const vigilAppSource = fs.readFileSync(new URL('../components/VigilApp.tsx', import.meta.url), 'utf8');
 const diagnosticsSource = fs.readFileSync(new URL('../lib/authDiagnostics.ts', import.meta.url), 'utf8');
+const diagnosticsScreenSource = fs.readFileSync(new URL('../app/diagnostics.tsx', import.meta.url), 'utf8');
 const localizationSource = fs.readFileSync(new URL('../lib/localization.ts', import.meta.url), 'utf8');
 const notificationSource = fs.readFileSync(new URL('../lib/notifications.ts', import.meta.url), 'utf8');
 const mobilePackageSource = fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8');
@@ -35,7 +37,7 @@ test('verification inputs support native one-time-code autofill and resend coold
   assert.match(signInSource, /testID="password-reset-code"[\s\S]*textContentType="oneTimeCode"[\s\S]*autoComplete="one-time-code"/);
   assert.match(signInSource, /testID="resend-email-verification-code"/);
   assert.match(signInSource, /testID="resend-password-reset-code"/);
-  assert.match(signInSource, /prepareEmailAddressVerification\(\{ strategy: 'email_code' \}\)/);
+  assert.match(signInSource, /signUp\.verifications\.sendEmailCode\(\)/);
   assert.match(signInSource, /setResendCooldown\(30\)/);
   assert.match(signInSource, /resendCodeIn/);
   assert.match(signInSource, /resendCodeFailed/);
@@ -43,44 +45,55 @@ test('verification inputs support native one-time-code autofill and resend coold
 });
 
 test('preview email verification shows inline errors instead of relying on native alerts', () => {
-  assert.match(signInSource, /if \(!verificationCode\.trim\(\)\) \{\s+setAuthMessage\(t\('checkVerificationCode'\)\)/);
+  assert.match(signInSource, /if \(!alreadyVerified && !verificationCode\.trim\(\)\) \{\s+setAuthMessage\(t\('checkVerificationCode'\)\)/);
   assert.match(signInSource, /getAuthErrorMessage\(error, t\('checkVerificationCode'\)\)/);
   assert.match(signInSource, /setAuthMessage\(message\);\s+if \(Platform\.OS !== 'web'\) Alert\.alert\(t\('verificationFailed'\), message\)/);
-  assert.match(signInSource, /result\.status !== 'complete' \|\| !result\.createdSessionId/);
+  assert.match(signInSource, /signupState\.emailVerificationStatus === 'verified'/);
 });
 
 test('custom email verification guards duplicate submissions and rate-limit loops', () => {
   assert.match(signInSource, /verificationInFlightRef = useRef\(false\)/);
   assert.match(signInSource, /verificationInFlightRef\.current = true/);
-  assert.match(signInSource, /const currentSignup = currentSignupRef\.current/);
-  assert.match(signInSource, /if \(!signUpLoaded \|\| !currentSignup \|\| !setActive \|\| verificationInFlightRef\.current\)/);
+  assert.match(signInSource, /if \(!isLoaded \|\| verificationInFlightRef\.current\)/);
+  assert.match(signInSource, /emailVerificationCompletedRef\.current \|\| currentState\.emailVerificationStatus === 'verified'/);
   assert.match(signInSource, /details\.httpStatus === '429'/);
-  assert.match(signInSource, /alreadyVerified && currentSignup\.status === 'complete' && currentSignup\.createdSessionId/);
-  assert.doesNotMatch(signInSource, /attemptEmailAddressVerification\(\{ code: verificationCode\.trim\(\) \}\)[\s\S]{0,1000}attemptEmailAddressVerification/);
+  assert.match(signInSource, /serverAlreadyVerified \|\| signupState\.emailVerificationStatus === 'verified'/);
+  assert.equal((signInSource.match(/signUp\.verifications\.verifyEmailCode\(/g) ?? []).length, 1);
 });
 
 test('custom signup keeps Clerk resource state and avoids misleading verification fallbacks', () => {
-  assert.match(signInSource, /currentSignupRef = useRef/);
-  assert.match(signInSource, /currentSignupRef\.current = createdSignup/);
-  assert.match(signInSource, /createdSignup\.prepareEmailAddressVerification\(\{ strategy: 'email_code' \}\)/);
-  assert.match(signInSource, /currentSignup\.attemptEmailAddressVerification\(\{ code: verificationCode\.trim\(\) \}\)/);
+  assert.match(signInSource, /useSignUp\s*\}\s*from '@clerk\/expo'/);
+  assert.match(signInSource, /signUp\.password\(\{/);
+  assert.match(signInSource, /signUp\.verifications\.sendEmailCode\(\)/);
+  assert.match(signInSource, /signUp\.verifications\.verifyEmailCode\(\{ code: verificationCode\.trim\(\) \}\)/);
+  assert.match(signInSource, /signUp\.update\(profileUpdate\)/);
+  assert.match(signInSource, /signUp\.finalize\(\{ navigate: \(\) => \{\} \}\)/);
   assert.match(signInSource, /summarizeCustomSignup/);
   assert.match(signInSource, /emailVerificationStatus/);
+  assert.match(signupDiagnosticsSource, /verificationStrategy/);
   assert.match(signInSource, /missingFields/);
   assert.match(signInSource, /createdSessionIdPresent/);
-  assert.match(signInSource, /code: 'signup_incomplete'/);
-  assert.match(signInSource, /firstName: firstName\.trim\(\)/);
-  assert.match(signInSource, /lastName: lastName\.trim\(\)/);
-  assert.doesNotMatch(signInSource, /signUp\.prepareEmailAddressVerification/);
-  assert.doesNotMatch(signInSource, /signUp\.attemptEmailAddressVerification/);
+  assert.match(signInSource, /profileUpdate\.firstName = firstName\.trim\(\)/);
+  assert.match(signInSource, /profileUpdate\.lastName = lastName\.trim\(\)/);
+  assert.doesNotMatch(signInSource, /signUp\.create\(|attemptEmailAddressVerification|prepareEmailAddressVerification/);
 });
 
-test('custom signup resend uses the preserved attempt and activation is guarded', () => {
-  assert.match(signInSource, /const currentSignup = currentSignupRef\.current/);
-  assert.match(signInSource, /currentSignup\.prepareEmailAddressVerification\(\{ strategy: 'email_code' \}\)/);
+test('custom signup resend uses the active Future resource and activation is guarded', () => {
+  assert.match(signInSource, /signUp\.verifications\.sendEmailCode\(\)/);
   assert.match(signInSource, /verificationSessionActivatedRef = useRef\(false\)/);
   assert.match(signInSource, /verificationSessionActivatedRef\.current = true/);
-  assert.doesNotMatch(signInSource, /mode === 'verify'[\s\S]{0,220}signUp\.create/);
+  assert.doesNotMatch(signInSource, /mode === 'verify'[\s\S]{0,220}signUp\.password/);
+
+  const resendStart = signInSource.indexOf('const resendVerificationCode');
+  const resetStart = signInSource.indexOf('const completePasswordReset', resendStart);
+  const resendFlow = signInSource.slice(resendStart, resetStart);
+  const emailResendStart = resendFlow.indexOf("if (mode === 'verify')");
+  const resetBranchStart = resendFlow.indexOf("} else if (mode === 'forgotReset')");
+  const emailResendFlow = resendFlow.slice(emailResendStart, resetBranchStart);
+  assert.match(emailResendFlow, /summarizeCustomSignup\(signUp\)/);
+  assert.match(emailResendFlow, /await finishVerifiedSignup\(\)/);
+  assert.match(emailResendFlow, /signUp\.verifications\.sendEmailCode\(\)/);
+  assert.doesNotMatch(emailResendFlow, /signUp\.(?:reset|password)\(/);
 });
 
 test('resend verification copy is translated in every supported language', () => {
@@ -90,6 +103,15 @@ test('resend verification copy is translated in every supported language', () =>
       assert.ok(value && value !== key, `${language}:${key} must resolve to translated copy`);
     }
     assert.match(extendedMessage(language, 'resendCodeIn'), /seconds|secondes|sek|seg|с|ث|s/);
+  }
+});
+
+test('verified-but-incomplete signup states have translated, explicit guidance', () => {
+  for (const language of ['en', 'fr', 'cs', 'de', 'es', 'ru', 'ar']) {
+    for (const key of ['signupVerifiedNeedsFields', 'signupSessionNotReady']) {
+      const value = extendedMessage(language, key);
+      assert.ok(value && value !== key, `${language}:${key} must resolve to translated copy`);
+    }
   }
 });
 
@@ -284,7 +306,7 @@ test('web Clerk SSO has a real callback route for the Expo auth session', () => 
   assert.match(signInSource, /startSSOFlow\(\{ strategy: 'oauth_apple' \}\)/);
 });
 
-test('Apple failures remain user-safe while diagnostics stay hidden and allowlisted', () => {
+test('Apple failures stay user-safe and signed-in accounts can open redacted diagnostics', () => {
   assert.match(signInSource, /classifyAppleFailure/);
   assert.match(signInSource, /\/api\/vigil\/identity/);
   assert.match(signInSource, /verifyVigilBackendSession/);
@@ -294,10 +316,16 @@ test('Apple failures remain user-safe while diagnostics stay hidden and allowlis
   assert.match(signInSource, /recordAuthDiagnostic/);
   assert.match(signInSource, /copy-diagnostics-version/);
   assert.match(signInSource, /versionTapCount\.current >= 7/);
+  assert.match(signInSource, /if \(!canCopyDiagnostics\) return/);
   assert.match(signInSource, /Clipboard\.setStringAsync/);
   assert.match(signInSource, /VIGIL_ADMIN_EMAILS/);
   assert.match(vigilAppSource, /diagnostics-version-tap/);
-  assert.match(vigilAppSource, /isAdmin && diagnosticsUnlocked/);
+  assert.match(vigilAppSource, /diagnosticsTapCount\.current >= 5/);
+  assert.match(vigilAppSource, /router\.push\('\/diagnostics'\)/);
+  assert.doesNotMatch(vigilAppSource, /diagnosticsUnlocked|Tap 5×/);
+  assert.match(diagnosticsScreenSource, /const \{ isLoaded, isSignedIn \} = useIdentity\(\)/);
+  assert.match(diagnosticsScreenSource, /if \(!isLoaded \|\| !isSignedIn\) return null/);
+  assert.doesNotMatch(diagnosticsScreenSource, /isAdmin/);
   assert.match(diagnosticsSource, /redacted-token/);
   assert.match(diagnosticsSource, /redacted-email/);
   assert.match(diagnosticsSource, /decodeAppleIdentityTokenClaims/);
@@ -344,14 +372,17 @@ test('Clerk environment selection is explicit and isolated', () => {
   assert.match(apiPackageSource, /VIGIL_CLERK_MODE=development/);
   assert.equal(easConfig.build.development.env.VIGIL_CLERK_MODE, 'development');
   assert.equal(easConfig.build.development.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY, '$VIGIL_EXTERNAL_CLERK_DEVELOPMENT_PUBLISHABLE_KEY');
+  assert.equal(easConfig.build.development.env.EXPO_PUBLIC_VIGIL_EXTERNAL_CLERK_DEVELOPMENT_PUBLISHABLE_KEY, '$VIGIL_EXTERNAL_CLERK_DEVELOPMENT_PUBLISHABLE_KEY');
   assert.equal(easConfig.build.preview.env.VIGIL_CLERK_MODE, 'development');
   assert.equal(easConfig.build.preview.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY, '$VIGIL_EXTERNAL_CLERK_DEVELOPMENT_PUBLISHABLE_KEY');
+  assert.equal(easConfig.build.preview.env.EXPO_PUBLIC_VIGIL_EXTERNAL_CLERK_DEVELOPMENT_PUBLISHABLE_KEY, '$VIGIL_EXTERNAL_CLERK_DEVELOPMENT_PUBLISHABLE_KEY');
   assert.equal(easConfig.cli.appVersionSource, 'local');
   assert.equal(easConfig.build.production.autoIncrement, false);
-   assert.match(mobileAppConfigSource, /"buildNumber": "23"/);
+  assert.match(mobileAppConfigSource, /"buildNumber": "28"/);
   assert.equal(easConfig.build.production.env.VIGIL_CLERK_MODE, 'production');
   assert.equal(easConfig.build.production.environment, 'production');
-  assert.equal(easConfig.build.production.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY, '$VIGIL_EXTERNAL_CLERK_PUBLISHABLE_KEY');
+  assert.equal(easConfig.build.production.env.EXPO_PUBLIC_VIGIL_EXTERNAL_CLERK_PUBLISHABLE_KEY, '$VIGIL_EXTERNAL_CLERK_PUBLISHABLE_KEY');
+  assert.equal(easConfig.build.production.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY, undefined);
   assert.equal(easConfig.build.production.env.EXPO_PUBLIC_CLERK_USE_PROXY, 'false');
   assert.equal(easConfig.submit.production.ios.ascAppId, '6811090049');
   assert.equal(easConfig.submit.production.ascAppId, undefined);
@@ -373,9 +404,22 @@ test('destructive account actions require explicit irreversible-action confirmat
 
 test('account deletion clears scoped local state and links to Apple subscription management', () => {
   const appContextSource = fs.readFileSync(new URL('../context/AppContext.tsx', import.meta.url), 'utf8');
+  const identityContextSource = fs.readFileSync(new URL('../context/IdentityContext.tsx', import.meta.url), 'utf8');
   assert.match(vigilAppSource, /https:\/\/apps\.apple\.com\/account\/subscriptions/);
   assert.match(vigilAppSource, /subscriptionDeletionNotice/);
   assert.match(vigilAppSource, /await deleteIdentityAccount\(\);\s*await startOver\(\);\s*router\.replace\('\/sign-in'\)/);
   assert.match(appContextSource, /await AsyncStorage\.removeItem\(accountStorageKey\(scopedUserId\)\)/);
   assert.doesNotMatch(vigilAppSource, /RevenueCat.*delete|delete.*RevenueCat/i);
+
+  const deleteStart = identityContextSource.indexOf('const deleteAccount = useCallback');
+  const deleteEnd = identityContextSource.indexOf('const activateClerk', deleteStart);
+  const deleteFlow = identityContextSource.slice(deleteStart, deleteEnd);
+  assert.ok(deleteFlow.indexOf("apiUrl('/api/vigil/support-requests/me')") < deleteFlow.indexOf('await clerkUser.delete()'));
+  assert.ok(deleteFlow.indexOf('await clerkUser.delete()') < deleteFlow.indexOf('await clerkSignOut()'));
+  assert.ok(deleteFlow.indexOf('await clerkSignOut()') < deleteFlow.lastIndexOf("persistActiveProvider('signed-out')"));
+  assert.match(deleteFlow, /recordAuthDiagnostic\('account-deletion', 'clerk-session-token'/);
+  assert.match(deleteFlow, /recordAuthDiagnostic\('account-deletion', 'support-data'/);
+  assert.match(deleteFlow, /recordAuthDiagnostic\('account-deletion', 'clerk-user'/);
+  assert.match(deleteFlow, /recordAuthDiagnostic\('account-deletion', 'session-cleanup'/);
+  assert.match(deleteFlow, /requestId: supportResponse\.headers\.get\('x-request-id'\)/);
 });

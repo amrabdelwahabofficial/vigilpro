@@ -1,6 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import {
+  getClerkKeyEnvironment,
+  getClerkKeyHost,
+  getClerkRuntimePublishableKey,
+} from '@/lib/runtimeCredentials';
 
 const DIAGNOSTIC_KEY = 'vigil-diagnostics-v2';
 const MAX_EVENTS = 60;
@@ -132,24 +137,20 @@ export function appVersionBuild() {
 }
 
 export function clerkEnvironmentSummary() {
-  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
-  const mode = process.env.VIGIL_CLERK_MODE?.trim().toLowerCase()
-    || (publishableKey.includes('_live_') ? 'production' : publishableKey.includes('_test_') ? 'development' : 'unknown');
+  const publishableKey = getClerkRuntimePublishableKey();
+  const mode = process.env.EXPO_PUBLIC_VIGIL_BUILD_PROFILE?.trim().toLowerCase()
+    || process.env.VIGIL_CLERK_MODE?.trim().toLowerCase()
+    || (getClerkKeyEnvironment(publishableKey) === 'LIVE'
+      ? 'production'
+      : getClerkKeyEnvironment(publishableKey) === 'TEST' ? 'development' : 'unknown');
   return {
     mode,
-    keyEnvironment: publishableKey.includes('_live_') ? 'live' : publishableKey.includes('_test_') ? 'test' : 'unknown',
+    keyEnvironment: getClerkKeyEnvironment(publishableKey).toLowerCase(),
   };
 }
 
 export function clerkFrontendApiHost() {
-  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
-  const encodedHost = publishableKey.match(/^pk_(?:test|live)_([A-Za-z0-9_-]+)$/)?.[1] ?? '';
-  const configured = decodeBase64Url(encodedHost);
-  try {
-    return new URL(configured.includes('://') ? configured : `https://${configured}`).hostname || 'not configured';
-  } catch {
-    return configured ? '[invalid]' : 'not configured';
-  }
+  return getClerkKeyHost(getClerkRuntimePublishableKey());
 }
 
 function diagnosticBase(area: DiagnosticArea, flow: string, stage: string, status: DiagnosticStatus): Omit<DiagnosticEvent, 'id' | 'recordedAt'> {

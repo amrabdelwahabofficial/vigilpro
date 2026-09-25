@@ -24,6 +24,10 @@ export interface PaywallProps {
   restoring: boolean;
   configured: boolean;
   isPro?: boolean;
+  introHeadline?: string;
+  introCopy?: string;
+  goalLine?: string;
+  hideUnlockHeadline?: boolean;
 }
 
 export function PaywallContent({
@@ -41,9 +45,13 @@ export function PaywallContent({
   purchasing,
   restoring,
   configured,
-  isPro
+  isPro,
+  introHeadline,
+  introCopy,
+  goalLine,
+  hideUnlockHeadline = false,
 }: PaywallProps) {
-  const { palette, t } = useVigil();
+  const { palette, t, language } = useVigil();
   const [legalDoc, setLegalDoc] = useState<LegalDocument | null>(null);
   
   const selectedPackage = selectedPlan === 'yearly' ? yearlyPackage : monthlyPackage;
@@ -63,7 +71,7 @@ export function PaywallContent({
   const disableActions = purchasing || restoring;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { direction: language === 'ar' ? 'rtl' : 'ltr' }]}>
       <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* 1. Top section */}
         <View style={styles.topSection}>
@@ -74,8 +82,9 @@ export function PaywallContent({
           )}
           
           <View style={styles.introSection}>
-            <Text style={[styles.preparingHeadline, { color: palette.foreground }]}>{t('paywallPreparing')}</Text>
-            <Text style={[styles.preparingCopy, { color: palette.mutedForeground }]}>{t('paywallPreparingCopy')}</Text>
+            <Text style={[styles.preparingHeadline, { color: palette.foreground, textAlign: language === 'ar' ? 'right' : 'left' }]}>{introHeadline ?? t('paywallPreparing')}</Text>
+            <Text style={[styles.preparingCopy, { color: palette.mutedForeground, textAlign: language === 'ar' ? 'right' : 'left' }]}>{introCopy ?? t('paywallPreparingCopy')}</Text>
+            {goalLine ? <Text style={[styles.goalLine, { color: palette.primary, textAlign: language === 'ar' ? 'right' : 'left' }]}>{goalLine}</Text> : null}
           </View>
 
           <View style={styles.benefitsList}>
@@ -87,7 +96,7 @@ export function PaywallContent({
 
         {/* 2. Main paywall section */}
         <View style={styles.paywallSection}>
-          <Text style={[styles.unlockHeadline, { color: palette.foreground }]}>{t('paywallUnlock')}</Text>
+          {!hideUnlockHeadline && <Text style={[styles.unlockHeadline, { color: palette.foreground }]}>{t('paywallUnlock')}</Text>}
           
           {/* 3. Pricing options */}
           <View style={styles.planList}>
@@ -268,6 +277,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginTop: 10,
+  },
+  goalLine: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 12,
   },
   benefitsList: {
     gap: 16,

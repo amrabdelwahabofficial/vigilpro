@@ -13,6 +13,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { getPublicPage } = require('./publicPages');
+const { renderLandingPage } = require('./landingLocalization');
 
 const STATIC_ROOT = path.resolve(__dirname, '..', 'static-build');
 const TEMPLATE_PATH = path.resolve(__dirname, 'templates', 'landing-page.html');
@@ -52,22 +53,6 @@ function getAppName() {
   }
 }
 
-function escapeHtml(value) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-function toScriptString(value) {
-  return JSON.stringify(value)
-    .replaceAll('<', '\\u003c')
-    .replaceAll('>', '\\u003e')
-    .replaceAll('&', '\\u0026');
-}
-
 function serveManifest(platform, res) {
   const manifestPath = path.join(STATIC_ROOT, platform, 'manifest.json');
 
@@ -89,17 +74,18 @@ function serveManifest(platform, res) {
 }
 
 function serveLandingPage(req, res, landingPageTemplate, appName) {
-  const host = req.headers['x-forwarded-host'] || req.headers['host'];
-  const baseUrl = PUBLIC_SITE_URL;
-  const expsUrl = `exps://${host}${basePath}`;
+  const requestUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+  const html = renderLandingPage(landingPageTemplate, {
+    appName,
+    baseUrl: PUBLIC_SITE_URL,
+    requestedLanguage: requestUrl.searchParams.get('lang'),
+    acceptLanguage: req.headers['accept-language'],
+  });
 
-  const html = landingPageTemplate
-    .replace(/BASE_URL_PLACEHOLDER/g, baseUrl)
-    .replace(/EXPS_URL_ATTRIBUTE_PLACEHOLDER/g, escapeHtml(expsUrl))
-    .replace(/EXPS_URL_JSON_PLACEHOLDER/g, toScriptString(expsUrl))
-    .replace(/APP_NAME_PLACEHOLDER/g, escapeHtml(appName));
-
-  res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+  res.writeHead(200, {
+    'content-type': 'text/html; charset=utf-8',
+    vary: 'Accept-Language',
+  });
   res.end(html);
 }
 

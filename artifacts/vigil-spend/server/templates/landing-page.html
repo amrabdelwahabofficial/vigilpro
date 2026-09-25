@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="LANDING_LANGUAGE_PLACEHOLDER" dir="LANDING_DIRECTION_PLACEHOLDER">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vigil Spend — Spending Tracker &amp; Budget Planner</title>
-    <meta name="description" content="Track your spending, understand where your money goes, plan your budget, and capture expenses with Vigil Spend using manual entry, receipts and voice." />
+    <title id="page-title">LANDING_META_TITLE_PLACEHOLDER</title>
+    <meta name="description" content="LANDING_META_DESCRIPTION_PLACEHOLDER" data-i18n-content="meta.description" />
     <meta name="application-name" content="Vigil Spend" />
     <meta name="apple-itunes-app" content="app-id=6811090049" />
     <meta name="robots" content="index,follow" />
@@ -12,24 +12,25 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Vigil Spend" />
     <meta property="og:url" content="BASE_URL_PLACEHOLDER" />
-    <meta property="og:title" content="Vigil Spend — Know Where It All Goes" />
-    <meta property="og:description" content="A quieter way to notice spending, see what remains, and choose your next money move." />
+    <meta property="og:locale" content="LANDING_META_LOCALE_PLACEHOLDER" />
+    <meta property="og:title" content="LANDING_META_TITLE_PLACEHOLDER" data-i18n-content="meta.title" />
+    <meta property="og:description" content="LANDING_META_SOCIAL_PLACEHOLDER" data-i18n-content="meta.social" />
     <meta property="og:image" content="https://vigilspend.com/og-image.png" />
     <meta property="og:image:secure_url" content="https://vigilspend.com/og-image.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Vigil Spend — Know Where It All Goes" />
+    <meta property="og:image:alt" content="LANDING_META_IMAGE_ALT_PLACEHOLDER" data-i18n-content="meta.imageAlt" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Vigil Spend — Know Where It All Goes" />
-    <meta name="twitter:description" content="A quieter way to notice spending, see what remains, and choose your next money move." />
+    <meta name="twitter:title" content="LANDING_META_TITLE_PLACEHOLDER" data-i18n-content="meta.title" />
+    <meta name="twitter:description" content="LANDING_META_SOCIAL_PLACEHOLDER" data-i18n-content="meta.social" />
     <meta name="twitter:image" content="https://vigilspend.com/og-image.png" />
-    <meta name="twitter:image:alt" content="Vigil Spend — Know Where It All Goes" />
+    <meta name="twitter:image:alt" content="LANDING_META_IMAGE_ALT_PLACEHOLDER" data-i18n-content="meta.imageAlt" />
     <meta name="theme-color" content="#f7f4f1" />
     <link rel="icon" type="image/svg+xml" href="https://vigilspend.com/favicon.svg" />
     <link rel="apple-touch-icon" href="https://vigilspend.com/apple-touch-icon.png" />
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap");
 
       :root {
         color-scheme: light;
@@ -116,6 +117,29 @@
         text-decoration: none;
       }
       .header-nav a:hover { color: var(--red); }
+      .language-picker { display: inline-flex; align-items: center; }
+      .language-select {
+        min-height: 38px;
+        max-width: 142px;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255,253,251,.8);
+        color: var(--ink-soft);
+        font: 700 12px var(--sans);
+        cursor: pointer;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
       .nav-app {
         padding: 10px 15px;
         border: 1px solid var(--line);
@@ -282,6 +306,32 @@
       .step p { max-width: 270px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
       .step:first-child p { color: rgba(255,255,255,.62); }
 
+      .pro-section { padding: 0 0 126px; }
+      .pro-panel {
+        display: grid;
+        grid-template-columns: .9fr 1.1fr;
+        gap: 54px;
+        align-items: center;
+        padding: 62px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: var(--card);
+      }
+      .pro-panel h2 { margin-bottom: 18px; }
+      .pro-intro { max-width: 450px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+      .plan-options { display: grid; grid-template-columns: .82fr 1.18fr; gap: 12px; }
+      .plan-card { min-height: 255px; padding: 22px; border: 1px solid var(--line); border-radius: 20px; }
+      .plan-card > span { color: var(--red); font: 11px var(--mono); letter-spacing: .05em; }
+      .plan-card p { margin: 19px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.65; }
+      .plan-card-pro { border-color: var(--ink); background: var(--ink); color: #fff; }
+      .plan-card-pro > span { color: #ff8c91; }
+      .plan-card-pro p { color: rgba(255,255,255,.72); }
+      .pro-benefits { display: grid; gap: 9px; margin: 17px 0 0; padding: 0; list-style: none; }
+      .pro-benefits li { position: relative; padding-inline-start: 19px; color: rgba(255,255,255,.9); font-size: 11px; line-height: 1.45; }
+      .pro-benefits li::before { position: absolute; inset-inline-start: 0; color: #ff8c91; content: "✓"; font-weight: 800; }
+      .pro-price-note { margin: 16px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+      .pro-download { margin-top: 15px; }
+
       .calm-section { padding: 0 0 126px; }
       .calm-panel {
         display: grid;
@@ -331,6 +381,14 @@
       footer a { text-decoration: none; }
       footer a:hover { color: var(--red); }
 
+      html[lang="ar"] body { font-family: "Noto Sans Arabic", var(--sans); }
+      html[dir="rtl"] .hero::after { right: auto; left: -180px; }
+      html[dir="rtl"] .phone { right: auto; left: 6%; }
+      html[dir="rtl"] .floating-note { right: auto; left: -1%; }
+      html[dir="rtl"] .phone-stage::before { left: auto; right: 4%; }
+      html[dir="rtl"] .principle { grid-template-columns: 1fr 32px; }
+      html[dir="rtl"] .principle-num { text-align: left; }
+
       @keyframes phone-in { from { opacity: 0; transform: translateY(16px) rotate(4deg); } to { opacity: 1; transform: translateY(0) rotate(4deg); } }
       @keyframes float-note { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
       @media (prefers-reduced-motion: reduce) {
@@ -345,13 +403,16 @@
         .steps { grid-template-columns: 1fr; }
         .step { min-height: 220px; }
         .step h3 { margin-top: 43px; }
+        .pro-panel { grid-template-columns: 1fr; gap: 30px; padding: 42px 34px; }
         .calm-panel { grid-template-columns: 1fr; gap: 35px; padding: 42px 34px; }
       }
       @media (max-width: 580px) {
         .container, .site-header { width: min(100% - 40px, 1160px); }
         .site-header { padding: 17px 0; }
         .header-nav a:not(.nav-app) { display: none; }
-        .nav-app { padding: 9px 12px; }
+        .nav-app { display: none; }
+        .header-nav { gap: 0; }
+        .language-select { max-width: 118px; min-height: 36px; font-size: 11px; }
         .hero { padding: 48px 0 72px; }
         h1 { font-size: clamp(47px, 14vw, 67px); }
         .hero-copy { font-size: 15px; }
@@ -359,11 +420,17 @@
         .button { width: 100%; }
         .phone-stage { min-height: 460px; }
         .phone { right: 7%; width: 286px; min-height: 460px; border-radius: 35px; }
+        html[dir="rtl"] .phone { right: auto; left: 7%; }
         .phone-screen { min-height: 418px; }
         .floating-note { right: -2%; bottom: 18px; }
+        html[dir="rtl"] .floating-note { right: auto; left: -2%; }
         .signal-inner { align-items: flex-start; }
         .signal-rule { display: none; }
         .section { padding: 86px 0; }
+        .pro-section { padding-bottom: 86px; }
+        .pro-panel { padding: 32px 24px; }
+        .plan-options { grid-template-columns: 1fr; }
+        .plan-card { min-height: auto; }
         .calm-section { padding-bottom: 86px; }
         h2 { font-size: 39px; }
         .final-cta { padding-bottom: 65px; }
@@ -373,39 +440,88 @@
         footer a { display: inline-block; }
       }
     </style>
-    <script type="application/ld+json">
+    <script type="application/ld+json" data-vigil-schema>
       {
         "@context": "https://schema.org",
         "@type": "MobileApplication",
         "name": "APP_NAME_PLACEHOLDER",
-        "description": "Vigil Spend is a personal money-awareness app for capturing spending, seeing what remains in your buckets, and making clearer next decisions with less guesswork.",
+        "description": "LANDING_SCHEMA_DESCRIPTION_PLACEHOLDER",
         "applicationCategory": "FinanceApplication",
         "operatingSystem": "iOS",
+        "inLanguage": "LANDING_LANGUAGE_PLACEHOLDER",
         "url": "BASE_URL_PLACEHOLDER",
         "downloadUrl": "https://apps.apple.com/app/id6811090049",
-        "featureList": [
-          "Manual spending capture",
-          "Receipt and bank screenshot capture",
-          "Voice transaction capture",
-          "Spending buckets and personal analysis"
-        ]
+        "featureList": LANDING_SCHEMA_FEATURES_PLACEHOLDER
       }
     </script>
     <script>
-      window.VIGIL_EXPO_URL = EXPS_URL_JSON_PLACEHOLDER;
+      window.VIGIL_LANDING_TRANSLATIONS = LANDING_TRANSLATIONS_PLACEHOLDER;
+      window.VIGIL_LANDING_SERVER_LANGUAGE = LANDING_SERVER_LANGUAGE_PLACEHOLDER;
+      (function () {
+        const translations = window.VIGIL_LANDING_TRANSLATIONS;
+        const supported = Object.keys(translations);
+        const normalize = (value) => {
+          if (typeof value !== "string") return null;
+          const language = value.trim().toLowerCase().split(/[-_]/, 1)[0];
+          return supported.includes(language) ? language : null;
+        };
+        const queryLanguage = normalize(new URLSearchParams(window.location.search).get("lang"));
+        let savedLanguage = null;
+        try { savedLanguage = normalize(window.localStorage.getItem("vigil-site-language")); } catch {}
+        const browserLanguages = navigator.languages?.length ? navigator.languages : [navigator.language];
+        const browserLanguage = browserLanguages.map(normalize).find(Boolean);
+        const language = queryLanguage || savedLanguage || browserLanguage ||
+          normalize(window.VIGIL_LANDING_SERVER_LANGUAGE) || "en";
+        const copy = translations[language];
+        const valueAt = (source, key) => key.split(".").reduce((value, part) => value?.[part], source);
+        const setMeta = (selector, key) => {
+          const element = document.querySelector(selector);
+          const value = valueAt(copy, key);
+          if (element && typeof value === "string") element.setAttribute("content", value);
+        };
+
+        document.documentElement.lang = language;
+        document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+        document.title = copy.meta.title;
+        setMeta('meta[name="description"]', "meta.description");
+        setMeta('meta[property="og:title"]', "meta.title");
+        setMeta('meta[property="og:description"]', "meta.social");
+        setMeta('meta[property="og:image:alt"]', "meta.imageAlt");
+        const localeMeta = document.querySelector('meta[property="og:locale"]');
+        if (localeMeta) localeMeta.setAttribute("content", {
+          en: "en_US", fr: "fr_FR", cs: "cs_CZ", de: "de_DE", es: "es_ES", ru: "ru_RU", ar: "ar_AE"
+        }[language]);
+        setMeta('meta[name="twitter:title"]', "meta.title");
+        setMeta('meta[name="twitter:description"]', "meta.social");
+        setMeta('meta[name="twitter:image:alt"]', "meta.imageAlt");
+        window.VIGIL_LANDING_LANGUAGE = language;
+      })();
     </script>
   </head>
   <body>
     <div class="page">
       <header class="site-header">
-        <a class="brand" href="BASE_URL_PLACEHOLDER" aria-label="Vigil Spend home">
+        <a class="brand" href="BASE_URL_PLACEHOLDER" aria-label="Vigil Spend home" data-i18n-aria="homeAria">
           <span class="brand-mark" aria-hidden="true">V</span>
           <span class="brand-name">Vigil Spend</span>
         </a>
-        <nav class="header-nav" aria-label="Primary navigation">
-          <a href="#how-it-works">How it works</a>
-          <a href="#principles">The Vigil Spend way</a>
-          <a class="nav-app" href="EXPS_URL_ATTRIBUTE_PLACEHOLDER">Open mobile app</a>
+        <nav class="header-nav" aria-label="Primary navigation" data-i18n-aria="navAria">
+          <a href="#how-it-works" data-i18n="nav.how">How it works</a>
+          <a href="#principles" data-i18n="nav.approach">Our approach</a>
+          <a href="#vigil-pro" data-i18n="nav.pro">Vigil Pro</a>
+          <label class="language-picker">
+            <span class="sr-only" data-i18n="languageLabel">Choose language</span>
+            <select class="language-select" id="language-select" aria-label="Choose language" data-i18n-aria="languageLabel">
+              <option value="en" lang="en">English</option>
+              <option value="fr" lang="fr">Français</option>
+              <option value="cs" lang="cs">Čeština</option>
+              <option value="de" lang="de">Deutsch</option>
+              <option value="es" lang="es">Español</option>
+              <option value="ru" lang="ru">Русский</option>
+              <option value="ar" lang="ar">العربية</option>
+            </select>
+          </label>
+          <a class="nav-app" href="https://apps.apple.com/app/id6811090049" rel="noopener noreferrer" data-i18n="nav.download">Download app</a>
         </nav>
       </header>
 
@@ -413,47 +529,47 @@
         <section class="hero" aria-labelledby="hero-title">
           <div class="container hero-grid">
             <div>
-              <div class="eyebrow">Personal money awareness</div>
-                <h1 id="hero-title">Vigil Spend makes money feel <em>knowable.</em></h1>
-              <p class="hero-copy">Vigil Spend helps you capture spending, see what remains in your buckets, and make a clearer next decision — without shame, noise, or a spreadsheet spiral.</p>
+              <div class="eyebrow" data-i18n="hero.eyebrow">KNOW WHERE IT ALL GOES</div>
+              <h1 id="hero-title" data-i18n="hero.title">Awareness is the first step to real change.</h1>
+              <p class="hero-copy" data-i18n="hero.copy">Vigil helps you notice spending, protect what matters, and make your next money decision consciously—with less shame, noise, and guesswork.</p>
               <div class="cta-row">
                 <a class="button button-primary" href="https://apps.apple.com/app/id6811090049" rel="noopener noreferrer">
                   <svg class="apple-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.71 19.5c-.98 1.45-2 2.9-3.62 2.93-1.6.03-2.13-.94-3.97-.94-1.85 0-2.43.91-3.95.97-1.57.06-2.75-1.57-3.73-3.01C1.44 16.5-.08 11.12 2 7.41a5.8 5.8 0 0 1 4.91-2.97c1.55-.03 3.02 1.03 3.95 1.03.94 0 2.69-1.27 4.53-1.08a5.5 5.5 0 0 1 4.31 2.34 5.4 5.4 0 0 0-2.53 4.54 5.27 5.27 0 0 0 3.2 4.84c-.29.84-.72 1.64-1.66 3.39ZM14.9 2.5A5.4 5.4 0 0 1 13.64 6.4a4.96 4.96 0 0 1-3.96 1.94A5.04 5.04 0 0 1 10.96 4.5 5.75 5.75 0 0 1 14.9 2.5Z"/></svg>
-                  Download on the App Store
+                  <span data-i18n="hero.download">Download on the App Store</span>
                 </a>
-                <a class="button button-quiet" href="#how-it-works">See how it works</a>
+                <a class="button button-quiet" href="#how-it-works" data-i18n="hero.how">See how it works</a>
               </div>
-              <p class="microcopy">For the moments between “where did it go?” and “what now?”</p>
+              <p class="microcopy" data-i18n="hero.microcopy">Start with today. Your next decision can feel clearer.</p>
             </div>
 
-            <div class="phone-stage" aria-label="Illustration of Vigil Spend showing remaining money in spending buckets">
+            <div class="phone-stage" aria-label="Example Vigil Spend screen showing money left for the month" data-i18n-aria="phone.aria">
               <div class="phone">
                 <div class="phone-screen">
                   <div class="notch" aria-hidden="true"></div>
-                  <div class="phone-top"><span>9:41</span><span>Vigil Spend</span></div>
-                  <h2 class="phone-title">Good morning.</h2>
-                  <p class="phone-date">Your month, at a glance</p>
+                  <div class="phone-top"><span>9:41</span><span class="sample-badge" data-i18n="phone.demo">SAMPLE PLAN</span></div>
+                  <h2 class="phone-title" data-i18n="phone.greeting">Good morning.</h2>
+                  <p class="phone-date" data-i18n="phone.month">Your month, at a glance</p>
                   <div class="balance-card">
-                    <div class="balance-label">REMAINING THIS MONTH</div>
-                    <div class="balance-value">$1,284.20</div>
+                    <div class="balance-label" data-i18n="phone.remaining">REMAINING THIS MONTH</div>
+                    <div class="balance-value">1,284.20</div>
                     <div class="balance-bar" aria-hidden="true"></div>
                   </div>
-                  <div class="bucket-heading">Your buckets <span>Remaining</span></div>
-                  <div class="bucket"><span class="bucket-dot"></span><span class="bucket-name">Everyday</span><span class="bucket-amount">$412.60</span></div>
-                  <div class="bucket"><span class="bucket-dot"></span><span class="bucket-name">Plans</span><span class="bucket-amount">$680.00</span></div>
-                  <div class="bucket"><span class="bucket-dot"></span><span class="bucket-name">Flex</span><span class="bucket-amount">$191.60</span></div>
+                  <div class="bucket-heading"><span data-i18n="phone.buckets">Your buckets</span><span data-i18n="phone.available">Remaining</span></div>
+                  <div class="bucket"><span class="bucket-dot"></span><span class="bucket-name" data-i18n="phone.everyday">Everyday</span><span class="bucket-amount">412.60</span></div>
+                  <div class="bucket"><span class="bucket-dot"></span><span class="bucket-name" data-i18n="phone.plans">Plans</span><span class="bucket-amount">680.00</span></div>
+                  <div class="bucket"><span class="bucket-dot"></span><span class="bucket-name" data-i18n="phone.flex">Flex</span><span class="bucket-amount">191.60</span></div>
                 </div>
               </div>
-              <div class="floating-note"><i aria-hidden="true">✓</i><span>Spending captured</span></div>
+              <div class="floating-note"><i aria-hidden="true">✓</i><span data-i18n="phone.captured">Spending captured</span></div>
             </div>
           </div>
         </section>
 
-        <section class="signal" aria-label="Vigil Spend's focus">
+        <section class="signal" aria-label="Vigil Spend's focus" data-i18n-aria="signal.aria">
           <div class="container signal-inner">
-            <p><strong>Know Where It All Goes.</strong> Then decide what deserves your attention next.</p>
+            <p><strong data-i18n="signal.lead">Know where it all goes.</strong> <span data-i18n="signal.copy">Then decide what deserves your attention next.</span></p>
             <span class="signal-rule" aria-hidden="true"></span>
-            <p>One calm view of the money you already have.</p>
+            <p data-i18n="signal.secondary">One calm view of the money you already have.</p>
           </div>
         </section>
 
@@ -461,27 +577,61 @@
           <div class="container">
             <div class="section-heading">
               <div>
-                <div class="eyebrow">A clearer rhythm</div>
-                <h2 id="how-title">Notice first. Decide second.</h2>
+                <div class="eyebrow" data-i18n="how.eyebrow">A CLEARER RHYTHM</div>
+                <h2 id="how-title" data-i18n="how.title">Notice first. Decide second.</h2>
               </div>
-              <p class="section-intro">Money awareness is not another thing to be perfect at. Vigil Spend gives each purchase a place, each bucket a current view, and your next decision a little more room.</p>
+              <p class="section-intro" data-i18n="how.intro">Money awareness is not another thing to be perfect at. Give each purchase a place, see what remains, and make your next choice with more room.</p>
             </div>
             <div class="steps">
               <article class="step">
-                <div class="step-num">01 / CAPTURE</div>
-                <h3>Put spending somewhere real.</h3>
-                <p>Record what you spend as you go, so the month is made of decisions you can actually see.</p>
+                <div class="step-num" data-i18n="how.steps.0.label">01 / CAPTURE</div>
+                <h3 data-i18n="how.steps.0.title">Put spending somewhere real.</h3>
+                <p data-i18n="how.steps.0.copy">Record purchases as you go, so your month is made of choices you can actually see.</p>
               </article>
               <article class="step">
-                <div class="step-num">02 / SEE</div>
-                <h3>Check what remains.</h3>
-                <p>Look at your buckets and understand what is available before the next choice arrives.</p>
+                <div class="step-num" data-i18n="how.steps.1.label">02 / SEE</div>
+                <h3 data-i18n="how.steps.1.title">Check what remains.</h3>
+                <p data-i18n="how.steps.1.copy">Look at your buckets and know what is available before the next choice arrives.</p>
               </article>
               <article class="step">
-                <div class="step-num">03 / CHOOSE</div>
-                <h3>Take the next clear step.</h3>
-                <p>Use the view in front of you to plan, adjust, or simply carry on with less guesswork.</p>
+                <div class="step-num" data-i18n="how.steps.2.label">03 / CHOOSE</div>
+                <h3 data-i18n="how.steps.2.title">Take the next clear step.</h3>
+                <p data-i18n="how.steps.2.copy">Plan, adjust, or simply carry on with less guesswork.</p>
               </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="pro-section" id="vigil-pro" aria-labelledby="pro-title">
+          <div class="container">
+            <div class="pro-panel">
+              <div>
+                <div class="eyebrow" data-i18n="pro.eyebrow">MORE ROOM TO MOVE</div>
+                <h2 id="pro-title" data-i18n="pro.title">Start free. Go further with Vigil Pro.</h2>
+                <p class="pro-intro" data-i18n="pro.copy">Build a money plan at your own pace. When you want less manual work and a fuller picture, Pro is ready.</p>
+              </div>
+              <div>
+                <div class="plan-options">
+                  <article class="plan-card">
+                    <span data-i18n="pro.freeLabel">FREE TO START</span>
+                    <p data-i18n="pro.freeCopy">Make a clear plan with manual spending entries and the essentials you choose to track.</p>
+                  </article>
+                  <article class="plan-card plan-card-pro">
+                    <span data-i18n="pro.proLabel">VIGIL PRO</span>
+                    <ul class="pro-benefits">
+                      <li data-i18n="pro.benefits.0">Capture spending with voice, receipts, and bank messages</li>
+                      <li data-i18n="pro.benefits.1">Unlock full Analysis with clearer explanations</li>
+                      <li data-i18n="pro.benefits.2">Create custom buckets around your priorities</li>
+                      <li data-i18n="pro.benefits.3">Plan with currency-aware tools</li>
+                    </ul>
+                  </article>
+                </div>
+                <p class="pro-price-note" data-i18n="pro.priceNote">Choose monthly or annual in the app. Apple shows the price, renewal terms, and any available introductory offer before you subscribe.</p>
+                <a class="button button-primary pro-download" href="https://apps.apple.com/app/id6811090049" rel="noopener noreferrer">
+                  <svg class="apple-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.71 19.5c-.98 1.45-2 2.9-3.62 2.93-1.6.03-2.13-.94-3.97-.94-1.85 0-2.43.91-3.95.97-1.57.06-2.75-1.57-3.73-3.01C1.44 16.5-.08 11.12 2 7.41a5.8 5.8 0 0 1 4.91-2.97c1.55-.03 3.02 1.03 3.95 1.03.94 0 2.69-1.27 4.53-1.08a5.5 5.5 0 0 1 4.31 2.34 5.4 5.4 0 0 0-2.53 4.54 5.27 5.27 0 0 0 3.2 4.84c-.29.84-.72 1.64-1.66 3.39ZM14.9 2.5A5.4 5.4 0 0 1 13.64 6.4a4.96 4.96 0 0 1-3.96 1.94A5.04 5.04 0 0 1 10.96 4.5 5.75 5.75 0 0 1 14.9 2.5Z"/></svg>
+                  <span data-i18n="pro.download">Get Vigil and explore Pro</span>
+                </a>
+              </div>
             </div>
           </div>
         </section>
@@ -490,22 +640,22 @@
           <div class="container">
             <div class="calm-panel">
               <div>
-                <div class="eyebrow">The Vigil Spend way</div>
-                <h2 id="principles-title">A softer voice for a practical job.</h2>
-                <p>Vigil Spend is built for awareness, not surveillance. It keeps the useful parts of money tracking close and leaves the judgment outside.</p>
+                <div class="eyebrow" data-i18n="approach.eyebrow">THE VIGIL SPEND WAY</div>
+                <h2 id="principles-title" data-i18n="approach.title">A softer voice for a practical job.</h2>
+                <p data-i18n="approach.copy">Vigil Spend is built for awareness, not surveillance. Keep the useful parts of money tracking close and leave the judgment outside.</p>
               </div>
               <div class="principles">
                 <article class="principle">
                   <div class="principle-num">A</div>
-                  <div><h3>Clear over complicated</h3><p>See the information that helps with the next decision, without a wall of numbers.</p></div>
+                  <div><h3 data-i18n="approach.items.0.title">Clear over complicated</h3><p data-i18n="approach.items.0.copy">See what helps with your next decision, without a wall of numbers.</p></div>
                 </article>
                 <article class="principle">
                   <div class="principle-num">B</div>
-                  <div><h3>Encouraging over corrective</h3><p>Make room for real life. A useful view starts with where you are, not where you “should” be.</p></div>
+                  <div><h3 data-i18n="approach.items.1.title">Encouraging over corrective</h3><p data-i18n="approach.items.1.copy">Start with real life as it is—not where you think you should be.</p></div>
                 </article>
                 <article class="principle">
                   <div class="principle-num">C</div>
-                  <div><h3>Personal over prescriptive</h3><p>Your buckets reflect your priorities and the way your month actually moves.</p></div>
+                  <div><h3 data-i18n="approach.items.2.title">Personal over prescriptive</h3><p data-i18n="approach.items.2.copy">Shape your buckets around your priorities and the way your month moves.</p></div>
                 </article>
               </div>
             </div>
@@ -515,12 +665,12 @@
         <section class="final-cta" aria-labelledby="final-title">
           <div class="container">
             <div class="final-panel">
-              <div class="eyebrow" style="color:rgba(255,255,255,.78)">Start with today</div>
-              <h2 id="final-title">You do not need a perfect plan to begin.</h2>
-              <p>Open Vigil Spend, capture what is happening, and let a clearer picture shape the next decision.</p>
+              <div class="eyebrow" style="color:rgba(255,255,255,.78)" data-i18n="closing.eyebrow">START WITH TODAY</div>
+              <h2 id="final-title" data-i18n="closing.title">You do not need a perfect plan to begin.</h2>
+              <p data-i18n="closing.copy">Open Vigil Spend, capture what is happening, and let a clearer picture shape your next decision.</p>
                 <a class="button" href="https://apps.apple.com/app/id6811090049" rel="noopener noreferrer">
                 <svg class="apple-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.71 19.5c-.98 1.45-2 2.9-3.62 2.93-1.6.03-2.13-.94-3.97-.94-1.85 0-2.43.91-3.95.97-1.57.06-2.75-1.57-3.73-3.01C1.44 16.5-.08 11.12 2 7.41a5.8 5.8 0 0 1 4.91-2.97c1.55-.03 3.02 1.03 3.95 1.03.94 0 2.69-1.27 4.53-1.08a5.5 5.5 0 0 1 4.31 2.34 5.4 5.4 0 0 0-2.53 4.54 5.27 5.27 0 0 0 3.2 4.84c-.29.84-.72 1.64-1.66 3.39ZM14.9 2.5A5.4 5.4 0 0 1 13.64 6.4a4.96 4.96 0 0 1-3.96 1.94A5.04 5.04 0 0 1 10.96 4.5 5.75 5.75 0 0 1 14.9 2.5Z"/></svg>
-                Download on the App Store
+                <span data-i18n="closing.download">Download on the App Store</span>
               </a>
             </div>
           </div>
@@ -531,17 +681,72 @@
         <div class="container footer-inner">
           <div>
             <strong>Vigil Spend</strong>
-            <span> — Know Where It All Goes.</span>
+            <span> — <span data-i18n="footer.tagline">Know Where It All Goes.</span></span>
           </div>
-          <nav aria-label="Footer navigation">
-            <a href="/support">Support</a>
-            <a href="/legal/privacy">Privacy</a>
-            <a href="/legal/terms">Terms</a>
-            <a href="/legal/eula">Apple EULA</a>
-            <a href="/account-deletion">Account deletion</a>
+          <nav aria-label="Support and legal links" data-i18n-aria="footer.navAria">
+            <a href="/support" data-i18n="footer.support">Support</a>
+            <a href="/legal/privacy" data-i18n="footer.privacy">Privacy</a>
+            <a href="/legal/terms" data-i18n="footer.terms">Terms</a>
+            <a href="/legal/eula" data-i18n="footer.eula">Apple EULA</a>
+            <a href="/account-deletion" data-i18n="footer.deletion">Account deletion</a>
           </nav>
         </div>
       </footer>
     </div>
+    <script>
+      (function () {
+        const translations = window.VIGIL_LANDING_TRANSLATIONS;
+        const languageSelect = document.getElementById("language-select");
+        const getValue = (source, key) => key.split(".").reduce((value, part) => value?.[part], source);
+
+        function applyLanguage(language, savePreference) {
+          const copy = translations[language] || translations.en;
+          const activeLanguage = translations[language] ? language : "en";
+          document.documentElement.lang = activeLanguage;
+          document.documentElement.dir = activeLanguage === "ar" ? "rtl" : "ltr";
+          document.title = copy.meta.title;
+
+          document.querySelectorAll("[data-i18n]").forEach((element) => {
+            const value = getValue(copy, element.dataset.i18n);
+            if (typeof value === "string") element.textContent = value;
+          });
+          document.querySelectorAll("[data-i18n-aria]").forEach((element) => {
+            const value = getValue(copy, element.dataset.i18nAria);
+            if (typeof value === "string") element.setAttribute("aria-label", value);
+          });
+          document.querySelectorAll("[data-i18n-content]").forEach((element) => {
+            const value = getValue(copy, element.dataset.i18nContent);
+            if (typeof value === "string") element.setAttribute("content", value);
+          });
+
+          const schemaElement = document.querySelector("[data-vigil-schema]");
+          if (schemaElement) {
+            try {
+              const schema = JSON.parse(schemaElement.textContent);
+              schema.description = copy.meta.description;
+              schema.featureList = copy.pro.benefits;
+              schema.inLanguage = activeLanguage;
+              schemaElement.textContent = JSON.stringify(schema, null, 2);
+            } catch {}
+          }
+
+          if (languageSelect) languageSelect.value = activeLanguage;
+          window.VIGIL_LANDING_LANGUAGE = activeLanguage;
+
+          if (savePreference) {
+            try { window.localStorage.setItem("vigil-site-language", activeLanguage); } catch {}
+            const nextUrl = new URL(window.location.href);
+            nextUrl.searchParams.set("lang", activeLanguage);
+            window.history.replaceState({}, "", nextUrl);
+          }
+        }
+
+        applyLanguage(window.VIGIL_LANDING_LANGUAGE || window.VIGIL_LANDING_SERVER_LANGUAGE || "en", false);
+        languageSelect?.addEventListener("change", (event) => {
+          applyLanguage(event.currentTarget.value, true);
+        });
+        window.VIGIL_SET_LANDING_LANGUAGE = applyLanguage;
+      })();
+    </script>
   </body>
 </html>

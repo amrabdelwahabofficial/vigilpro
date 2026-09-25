@@ -86,8 +86,15 @@ router.post("/vigil/capture", async (req: Request, res: Response) => {
   if (!(await requireUser(req, res))) return;
 
   const imageData = asString(req.body?.imageData, 18_000_000);
+  const imageDataList = Array.isArray(req.body?.imageDataList)
+    ? req.body.imageDataList
+      .filter((item: unknown): item is string => typeof item === "string" && item.startsWith("data:image/"))
+      .slice(0, 12)
+      .map((item: string) => item.slice(0, 18_000_000))
+    : [];
   const source = asString(req.body?.source, 20) || "receipt";
-  if (!imageData.startsWith("data:image/")) {
+  const images = imageDataList.length ? imageDataList : imageData.startsWith("data:image/") ? [imageData] : [];
+  if (!images.length) {
     res.status(400).json({ message: "A receipt or bank image is required." });
     return;
   }
@@ -100,26 +107,30 @@ router.post("/vigil/capture", async (req: Request, res: Response) => {
         {
           role: "system",
           content: [
-            "You extract spending transactions from a receipt or bank-message screenshot for Vigil.",
+            "You extract spending transactions from one or more receipt or bank-message screenshots for Vigil Spend.",
             'Return JSON only with exactly: {"transactions":[{"amount":positive number,"currency":"ISO 4217 code or null","note":"short merchant or transfer description","date":"YYYY-MM-DD or null"}]}.',
             "For bank screenshots, include every distinct debit or purchase. Exclude balances, deposits, credits, and duplicates.",
             "For receipts, normally use the final paid total unless multiple separate receipts are visible.",
             "Never invent an amount.",
             "Preserve the currency stated for each expense when it is clear. Use a three-letter ISO 4217 code such as USD, EUR, or AED; use null when the currency is not stated or cannot be determined.",
-            `The image source is ${source}.`,
+            `The image source is ${source}. Compare overlapping screenshots and return a single candidate for the same transaction when the merchant, amount, date, and currency clearly match. Keep legitimate repeated purchases when their dates or merchants differ.`,
           ].join(" "),
         },
         {
           role: "user",
           content: [
-            { type: "text", text: "Read this image and extract all spending transaction details." },
-            { type: "image_url", image_url: { url: imageData } },
+            { type: "text", text: "Read every supplied image and extract all spending transaction details. De-duplicate only clear overlaps." },
+            ...images.map((url: string) => ({ type: "image_url" as const, image_url: { url } })),
           ],
         },
       ],
     });
     const content = completion.choices[0]?.message?.content;
-    const transactions = typeof content === "string" ? parseCaptures(content) : [];
+    const rawTransactions = typeof content === "string" ? parseCaptures(content) : [];
+    const transactions = rawTransactions.filter((item, index, all) => {
+      const key = `${item.amount.toFixed(2)}|${item.currency ?? ""}|${item.date ?? ""}|${item.note.toLocaleLowerCase().replace(/\W+/g, " ").trim()}`;
+      return all.findIndex((candidate) => `${candidate.amount.toFixed(2)}|${candidate.currency ?? ""}|${candidate.date ?? ""}|${candidate.note.toLocaleLowerCase().replace(/\W+/g, " ").trim()}` === key) === index;
+    });
     if (!transactions.length) {
       res.status(422).json({ message: "No clear spending transactions were found. Enter the details manually." });
       return;

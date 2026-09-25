@@ -1,4 +1,5 @@
 import type { Language } from '@/context/AppContext';
+import { getOnboardingFlowMessage } from './onboardingFlowCopy.js';
 
 export const localeByLanguage: Record<Language, string> = {
   en: 'en-US',
@@ -178,6 +179,37 @@ const verificationExtra: Record<Language, Messages> = {
     resendCodeIn: 'إعادة إرسال الرمز خلال {seconds} ث',
     codeResent: 'تم إرسال رمز تحقق جديد.',
     resendCodeFailed: 'تعذر إرسال رمز آخر. انتظر قليلاً ثم حاول مجدداً.',
+  },
+};
+
+const signupLifecycleCopy: Record<Language, Messages> = {
+  en: {
+    signupVerifiedNeedsFields: 'Your email is verified, but signup still requires: {fields}. The code will not be submitted again.',
+    signupSessionNotReady: 'Clerk marked signup complete but did not provide a session. You are not signed in; try signing in or contact support.',
+  },
+  fr: {
+    signupVerifiedNeedsFields: 'Votre adresse e-mail est vérifiée, mais l’inscription nécessite encore : {fields}. Le code ne sera pas envoyé une seconde fois.',
+    signupSessionNotReady: 'Clerk a indiqué que l’inscription est terminée, mais n’a pas fourni de session. Vous n’êtes pas connecté. Réessayez de vous connecter ou contactez l’assistance.',
+  },
+  cs: {
+    signupVerifiedNeedsFields: 'E-mail je ověřen, ale registrace stále vyžaduje: {fields}. Kód znovu neodešleme.',
+    signupSessionNotReady: 'Clerk označil registraci za dokončenou, ale neposkytl relaci. Nejste přihlášeni. Zkuste se přihlásit nebo kontaktujte podporu.',
+  },
+  de: {
+    signupVerifiedNeedsFields: 'Deine E-Mail-Adresse ist bestätigt, aber für die Registrierung fehlt noch: {fields}. Der Code wird nicht erneut übermittelt.',
+    signupSessionNotReady: 'Clerk meldet die Registrierung als abgeschlossen, hat aber keine Sitzung bereitgestellt. Du bist nicht angemeldet. Melde dich erneut an oder wende dich an den Support.',
+  },
+  es: {
+    signupVerifiedNeedsFields: 'Tu correo está verificado, pero el registro aún requiere: {fields}. No volveremos a enviar el código.',
+    signupSessionNotReady: 'Clerk indicó que el registro terminó, pero no proporcionó una sesión. No has iniciado sesión; vuelve a intentarlo o contacta con soporte.',
+  },
+  ru: {
+    signupVerifiedNeedsFields: 'Электронная почта подтверждена, но для регистрации ещё требуется: {fields}. Повторно отправлять код не будем.',
+    signupSessionNotReady: 'Clerk отметил регистрацию завершённой, но не предоставил сеанс. Вы не вошли в аккаунт; попробуйте войти или обратитесь в поддержку.',
+  },
+  ar: {
+    signupVerifiedNeedsFields: 'تم التحقق من بريدك الإلكتروني، لكن التسجيل لا يزال يتطلب: {fields}. لن نرسل الرمز مرة أخرى.',
+    signupSessionNotReady: 'أشار Clerk إلى اكتمال التسجيل، لكنه لم يوفر جلسة. لم يتم تسجيل دخولك؛ حاول تسجيل الدخول أو تواصل مع الدعم.',
   },
 };
 
@@ -530,6 +562,72 @@ const captureCopy: Record<Language, Messages> = {
   },
 };
 
+const bucketCopy: Record<Language, Messages> = {
+  en: {
+    needs: 'Needs', investment: 'Investment', charity: 'Charity', fun: 'Fun',
+  },
+  fr: {
+    needs: 'Besoins essentiels', investment: 'Investissement', charity: 'Dons', fun: 'Loisirs',
+    bucketCommentTaxSteady: 'Votre réserve fiscale est prête avant la date limite.', bucketCommentTaxTight: 'Un peu plus de marge ici rend les imprévus moins stressants.', bucketCommentTaxOver: 'La réserve fiscale est sous tension. Gardez le reçu, pas la panique.',
+    bucketCommentNeedsSteady: 'Les dépenses essentielles sont couvertes. Les extras peuvent attendre.', bucketCommentNeedsTight: 'Les dépenses nécessaires prennent toute la place. Un petit ajustement s’impose.', bucketCommentNeedsOver: 'Les dépenses de base ont dépassé le plan. Un petit rééquilibrage vaut mieux qu’un grand regret.',
+    bucketCommentSavingsSteady: 'Ce fonds d’urgence aide à prendre des décisions sereines quand la vie change.', bucketCommentSavingsTight: 'Visez six mois de dépenses essentielles pour ne pas agir sous la pression.', bucketCommentSavingsOver: 'Votre fonds d’urgence grandit. Continuez à viser six mois de dépenses essentielles.',
+    bucketCommentInvestmentSteady: 'De petites graines, de beaux rendements à long terme.', bucketCommentInvestmentTight: 'À long terme, la régularité compte plus que la perfection.', bucketCommentInvestmentOver: 'La capitalisation approuve votre élan.',
+    bucketCommentDevelopmentSteady: 'Votre curiosité a son budget. Faites-en bon usage.', bucketCommentDevelopmentTight: 'Votre développement reste financé, même si le programme est encore en préparation.', bucketCommentDevelopmentOver: 'Votre esprit passe un excellent trimestre.',
+    bucketCommentCharitySteady: 'Donner avec intention aide à remarquer l’abondance qui vous entoure.', bucketCommentCharityTight: 'La générosité dure quand elle reste à votre portée. Donnez selon vos moyens et protégez vos bases.', bucketCommentCharityOver: 'Vous avez donné généreusement. Le don apporte du sens, des liens et du recul, bien au-delà de l’argent.',
+    bucketCommentFunSteady: 'Les loisirs sont financés. Excellent choix budgétaire.', bucketCommentFunTight: 'Les loisirs restent prévus au budget. Choisissez ce qui compte vraiment.', bucketCommentFunOver: 'Vous avez profité. Maintenant, laissez le budget souffler un peu.',
+  },
+  cs: {
+    needs: 'Potřeby', investment: 'Investice', charity: 'Charita', fun: 'Zábava',
+    bucketCommentTaxSteady: 'Na daňový termín jste připraveni s předstihem.', bucketCommentTaxTight: 'Trocha rezervy navíc zabrání nepříjemným překvapením.', bucketCommentTaxOver: 'Daňová rezerva je napjatá. Schovejte účtenku, nepropadejte panice.',
+    bucketCommentNeedsSteady: 'Základní potřeby jsou pokryté. Ostatní výdaje počkají.', bucketCommentNeedsTight: 'Nezbytné výdaje zabírají většinu rozpočtu. Je čas na malou úpravu.', bucketCommentNeedsOver: 'Základní výdaje překročily plán. Malá úprava je lepší než velká lítost.',
+    bucketCommentSavingsSteady: 'Pohotovostní fond pomáhá zachovat klid, když se život změní.', bucketCommentSavingsTight: 'Mířte na šest měsíců základních výdajů, abyste nemuseli jednat pod tlakem.', bucketCommentSavingsOver: 'Váš pohotovostní fond roste. Pokračujte v budování rezervy na šest měsíců základních výdajů.',
+    bucketCommentInvestmentSteady: 'Malé začátky, velký efekt složeného úročení.', bucketCommentInvestmentTight: 'Dlouhodobě pomáhá pravidelnost víc než dokonalost.', bucketCommentInvestmentOver: 'Složené úročení schvaluje vaše tempo.',
+    bucketCommentDevelopmentSteady: 'Vaše zvídavost má vlastní rozpočet. Využijte ho naplno.', bucketCommentDevelopmentTight: 'Rozvoj máte zajištěný, i když osnovy se ještě připravují.', bucketCommentDevelopmentOver: 'Vaše mysl má skvělé čtvrtletí.',
+    bucketCommentCharitySteady: 'Když dáváte s rozmyslem, všímáte si větší hojnosti kolem sebe.', bucketCommentCharityTight: 'Udržitelná štědrost prospívá všem. Dejte, co můžete, a chraňte své vlastní základy.', bucketCommentCharityOver: 'Přispěli jste štědře. Dávání přináší smysl, vztahy a nadhled, které peníze nezměří.',
+    bucketCommentFunSteady: 'Zábava je v rozpočtu. Skvělé finanční rozhodnutí.', bucketCommentFunTight: 'Zábava v plánu zůstává. Vyberte si to, na čem vám záleží.', bucketCommentFunOver: 'Užili jste si to. Teď dopřejte rozpočtu klidný večer.',
+  },
+  de: {
+    needs: 'Bedürfnisse', investment: 'Investitionen', charity: 'Spenden', fun: 'Freizeit',
+    bucketCommentTaxSteady: 'Die Steuerrücklage ist rechtzeitig gesichert.', bucketCommentTaxTight: 'Ein wenig mehr Spielraum verhindert unangenehme Überraschungen.', bucketCommentTaxOver: 'Die Steuerrücklage ist angespannt. Behalte den Beleg, nicht die Panik.',
+    bucketCommentNeedsSteady: 'Die Grundbedürfnisse sind gedeckt. Extras können warten.', bucketCommentNeedsTight: 'Notwendige Ausgaben nehmen viel Raum ein. Zeit für eine kleine Anpassung.', bucketCommentNeedsOver: 'Die Grundausgaben liegen über dem Plan. Eine kleine Korrektur ist besser als ein großer Ärger.',
+    bucketCommentSavingsSteady: 'Dieser Notfallfonds hilft dir, bei Veränderungen ruhig zu entscheiden.', bucketCommentSavingsTight: 'Baue Rücklagen für sechs Monate notwendiger Ausgaben auf, damit Druck keine Entscheidungen erzwingt.', bucketCommentSavingsOver: 'Dein Notfallfonds wächst. Baue weiter Rücklagen für sechs Monate notwendiger Ausgaben auf.',
+    bucketCommentInvestmentSteady: 'Kleine Anfänge, große Wirkung durch Zinseszins.', bucketCommentInvestmentTight: 'Langfristig zählt Beständigkeit mehr als Perfektion.', bucketCommentInvestmentOver: 'Der Zinseszins ist mit deinem Tempo zufrieden.',
+    bucketCommentDevelopmentSteady: 'Deine Neugier hat ein eigenes Budget. Nutze es mutig.', bucketCommentDevelopmentTight: 'Deine Entwicklung ist finanziert, auch wenn der Lehrplan noch entsteht.', bucketCommentDevelopmentOver: 'Dein Kopf erlebt ein ausgezeichnetes Quartal.',
+    bucketCommentCharitySteady: 'Wer mit Bedacht gibt, nimmt den Reichtum im eigenen Umfeld stärker wahr.', bucketCommentCharityTight: 'Nachhaltige Großzügigkeit tut allen gut. Gib, was du kannst, und stärke zugleich dein eigenes Fundament.', bucketCommentCharityOver: 'Du hast großzügig gegeben. Geben schenkt Sinn, Verbundenheit und neue Perspektiven, die Geld nicht messen kann.',
+    bucketCommentFunSteady: 'Freizeit ist eingeplant. Gute Finanzentscheidung.', bucketCommentFunTight: 'Freizeit bleibt im Plan. Wähle, was dir wirklich wichtig ist.', bucketCommentFunOver: 'Du hattest Freude. Jetzt darf sich das Budget einen ruhigen Abend gönnen.',
+  },
+  es: {
+    needs: 'Necesidades', investment: 'Inversión', charity: 'Donaciones', fun: 'Ocio',
+    bucketCommentTaxSteady: 'La reserva para impuestos está lista antes de la fecha límite.', bucketCommentTaxTight: 'Un poco más de margen aquí evita sorpresas desagradables.', bucketCommentTaxOver: 'La reserva para impuestos está bajo presión. Guarda el recibo, no el pánico.',
+    bucketCommentNeedsSteady: 'Las necesidades básicas están cubiertas. Los extras pueden esperar.', bucketCommentNeedsTight: 'Los gastos esenciales ocupan mucho espacio. Es hora de hacer un pequeño ajuste.', bucketCommentNeedsOver: 'Los gastos básicos superaron el plan. Un pequeño reajuste es mejor que un gran arrepentimiento.',
+    bucketCommentSavingsSteady: 'Este fondo de emergencia ayuda a tomar decisiones con calma cuando cambia la vida.', bucketCommentSavingsTight: 'Ahorra para cubrir seis meses de gastos esenciales y evitar decidir bajo presión.', bucketCommentSavingsOver: 'Tu fondo de emergencia crece. Sigue ahorrando para cubrir seis meses de gastos esenciales.',
+    bucketCommentInvestmentSteady: 'Pequeñas semillas, gran efecto del interés compuesto.', bucketCommentInvestmentTight: 'A largo plazo, la constancia importa más que la perfección.', bucketCommentInvestmentOver: 'El interés compuesto aprueba tu ritmo.',
+    bucketCommentDevelopmentSteady: 'Tu curiosidad tiene presupuesto. Aprovéchalo sin miedo.', bucketCommentDevelopmentTight: 'Tu desarrollo sigue financiado, aunque el programa aún esté por definirse.', bucketCommentDevelopmentOver: 'Tu mente está teniendo un trimestre excelente.',
+    bucketCommentCharitySteady: 'Dar con intención ayuda a notar la abundancia que te rodea.', bucketCommentCharityTight: 'La generosidad funciona mejor si es sostenible. Da lo que puedas y mantén firme tu propia base.', bucketCommentCharityOver: 'Has dado con generosidad. Dar aporta propósito, conexión y perspectiva de formas que el dinero no mide.',
+    bucketCommentFunSteady: 'El ocio está cubierto. Una decisión financiera excelente.', bucketCommentFunTight: 'El ocio sigue en el plan. Elige lo que de verdad disfrutas.', bucketCommentFunOver: 'Te has divertido. Ahora deja que el presupuesto descanse un poco.',
+  },
+  ru: {
+    needs: 'Основные нужды', investment: 'Инвестиции', charity: 'Благотворительность', fun: 'Развлечения',
+    bucketCommentTaxSteady: 'Налоговый резерв готов к сроку.', bucketCommentTaxTight: 'Небольшой запас поможет избежать неприятных сюрпризов.', bucketCommentTaxOver: 'Налоговый резерв под давлением. Сохраните чек, а не панику.',
+    bucketCommentNeedsSteady: 'Основные нужды покрыты. Дополнительные траты подождут.', bucketCommentNeedsTight: 'Необходимые расходы занимают много места. Пора немного скорректировать план.', bucketCommentNeedsOver: 'Основные расходы вышли за рамки плана. Небольшая корректировка лучше большого сожаления.',
+    bucketCommentSavingsSteady: 'Резервный фонд помогает принимать спокойные решения, когда жизнь меняется.', bucketCommentSavingsTight: 'Создайте запас на шесть месяцев основных расходов, чтобы не принимать решения под давлением.', bucketCommentSavingsOver: 'Ваш резервный фонд растёт. Продолжайте копить на шесть месяцев основных расходов.',
+    bucketCommentInvestmentSteady: 'Маленькие семена — серьёзный эффект сложного процента.', bucketCommentInvestmentTight: 'В долгосрочной перспективе постоянство важнее совершенства.', bucketCommentInvestmentOver: 'Сложный процент одобряет ваш настрой.',
+    bucketCommentDevelopmentSteady: 'Вашему любопытству выделен бюджет. Используйте его смело.', bucketCommentDevelopmentTight: 'Развитие профинансировано, даже если учебный план ещё формируется.', bucketCommentDevelopmentOver: 'У вашего ума отличный квартал.',
+    bucketCommentCharitySteady: 'Осознанная щедрость помогает замечать изобилие вокруг.', bucketCommentCharityTight: 'Щедрость лучше всего работает, когда она посильна. Помогайте по возможностям и укрепляйте собственную опору.', bucketCommentCharityOver: 'Вы щедро помогли. Добрые дела дают смысл, близость и перспективу, которые не измерить деньгами.',
+    bucketCommentFunSteady: 'Развлечения предусмотрены. Отличное финансовое решение.', bucketCommentFunTight: 'Развлечения остаются в плане. Выбирайте то, что действительно радует.', bucketCommentFunOver: 'Вы хорошо провели время. Теперь дайте бюджету немного передохнуть.',
+  },
+  ar: {
+    needs: 'الاحتياجات الأساسية', investment: 'الاستثمار', charity: 'التبرعات', fun: 'الترفيه',
+    bucketCommentTaxSteady: 'احتياطي الضرائب جاهز قبل الموعد النهائي.', bucketCommentTaxTight: 'مساحة إضافية بسيطة هنا تمنع المفاجآت المزعجة.', bucketCommentTaxOver: 'احتياطي الضرائب تحت ضغط. احتفظ بالإيصال، لا بالقلق.',
+    bucketCommentNeedsSteady: 'الاحتياجات الأساسية مغطاة. يمكن للإضافات أن تنتظر.', bucketCommentNeedsTight: 'النفقات الضرورية تشغل مساحة كبيرة. حان وقت تعديل بسيط.', bucketCommentNeedsOver: 'تجاوزت النفقات الأساسية الخطة. إعادة ضبط صغيرة أفضل من ندم كبير.',
+    bucketCommentSavingsSteady: 'يساعد صندوق الطوارئ على اتخاذ قرارات هادئة عندما تتغير الحياة.', bucketCommentSavingsTight: 'استهدف ادخار ما يغطي ستة أشهر من الأساسيات كي لا تفرض الضغوط قرارات متسرعة.', bucketCommentSavingsOver: 'صندوق الطوارئ لديك ينمو. واصل الادخار لتغطية ستة أشهر من الأساسيات.',
+    bucketCommentInvestmentSteady: 'بدايات صغيرة وأثر كبير للنمو المركب.', bucketCommentInvestmentTight: 'على المدى الطويل، الاستمرارية أهم من الكمال.', bucketCommentInvestmentOver: 'النمو المركب يوافق على هذا التقدم.',
+    bucketCommentDevelopmentSteady: 'لشغفك بالمعرفة ميزانية. أنفقها بثقة.', bucketCommentDevelopmentTight: 'تطويرك ممول، حتى لو كانت الخطة التعليمية لا تزال قيد الإعداد.', bucketCommentDevelopmentOver: 'عقلك يمر بربع سنة ممتاز.',
+    bucketCommentCharitySteady: 'العطاء عن قصد يساعدك على ملاحظة الوفرة من حولك.', bucketCommentCharityTight: 'ينمو العطاء حين يكون مستداماً. تبرع بما تستطيع وحافظ على أساسك المالي.', bucketCommentCharityOver: 'لقد أعطيت بسخاء. يمنح العطاء معنى وترابطاً ومنظوراً لا يمكن للمال قياسه.',
+    bucketCommentFunSteady: 'الترفيه ممول. قرار مالي ممتاز.', bucketCommentFunTight: 'الترفيه لا يزال ضمن الخطة. اختر ما تستمتع به حقاً.', bucketCommentFunOver: 'استمتعت بوقتك. والآن دع الميزانية تستريح قليلاً.',
+  },
+};
+
 const reviewCopy: Record<Language, Messages> = {
   en: { rateVigil: 'Rate Vigil Spend', rateVigilCopy: 'Share private feedback through Apple’s review dialog.', reviewUnavailable: 'The Apple review dialog is not available right now.' },
   fr: { rateVigil: 'Évaluer Vigil Spend', rateVigilCopy: 'Partagez votre avis privé dans la boîte de dialogue Apple.', reviewUnavailable: 'La boîte de dialogue Apple n’est pas disponible pour le moment.' },
@@ -541,5 +639,8 @@ const reviewCopy: Record<Language, Messages> = {
 };
 
 export function extendedMessage(language: Language, key: string): string | undefined {
-  return captureCopy[language]?.[key] ?? reviewCopy[language]?.[key] ?? doubleTapCopy[language]?.[key] ?? featureCopy[language]?.[key] ?? paywallCopy[language]?.[key] ?? passwordPolicyCopy[language]?.[key] ?? billingCopy[language]?.[key] ?? pricingCopy[language]?.[key] ?? verificationExtra[language]?.[key] ?? authExtra[language]?.[key] ?? flowExtra[language]?.[key] ?? (language === 'en' ? en[key] : parityExtra[language]?.[key] ?? parity[language]?.[key] ?? translated[language]?.[key]) ?? captureCopy.en?.[key] ?? reviewCopy.en?.[key] ?? doubleTapCopy.en?.[key] ?? featureCopy.en?.[key] ?? verificationExtra.en?.[key] ?? en[key];
+  const onboardingMessage = getOnboardingFlowMessage(language, key);
+  if (onboardingMessage !== undefined) return onboardingMessage;
+  if (key.startsWith('onboardingFlow')) return undefined;
+  return bucketCopy[language]?.[key] ?? captureCopy[language]?.[key] ?? reviewCopy[language]?.[key] ?? doubleTapCopy[language]?.[key] ?? featureCopy[language]?.[key] ?? paywallCopy[language]?.[key] ?? passwordPolicyCopy[language]?.[key] ?? billingCopy[language]?.[key] ?? pricingCopy[language]?.[key] ?? verificationExtra[language]?.[key] ?? signupLifecycleCopy[language]?.[key] ?? authExtra[language]?.[key] ?? flowExtra[language]?.[key] ?? (language === 'en' ? en[key] : parityExtra[language]?.[key] ?? parity[language]?.[key] ?? translated[language]?.[key]) ?? captureCopy.en?.[key] ?? reviewCopy.en?.[key] ?? doubleTapCopy.en?.[key] ?? featureCopy.en?.[key] ?? verificationExtra.en?.[key] ?? signupLifecycleCopy.en?.[key] ?? en[key];
 }

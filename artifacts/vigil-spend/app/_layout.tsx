@@ -19,6 +19,7 @@ import { tokenCache } from '@clerk/expo/token-cache';
 import { VigilProvider } from '@/context/AppContext';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { AppleOnlyIdentityProvider, IdentityProvider, useIdentity } from '@/context/IdentityContext';
+import { getClerkRuntimePublishableKey, isVigilProductionBuild } from '@/lib/runtimeCredentials';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -39,7 +40,7 @@ function LaunchScreen() {
   return (
     <View style={launchStyles.page}>
       <Animated.View style={[launchStyles.lockup, { opacity, transform: [{ scale }] }]}>
-        <Image source={require('@/assets/images/icon-transparent.png')} style={launchStyles.mark} />
+        <Image source={require('@/assets/images/launch-logo.png')} style={launchStyles.mark} />
         <Text style={launchStyles.name}>Vigil Spend</Text>
         <Text style={launchStyles.tagline}>Know where it all goes.</Text>
       </Animated.View>
@@ -152,13 +153,23 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
   if (showLaunchScreen) return <LaunchScreen />;
 
-  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const publishableKey = getClerkRuntimePublishableKey();
+  const isProductionBuild = isVigilProductionBuild();
   // The external Clerk account uses Clerk's frontend API directly. Only an
   // explicitly enabled legacy proxy should be passed to ClerkProvider.
   const proxyUrl = Platform.OS === 'web' && process.env.EXPO_PUBLIC_CLERK_USE_PROXY === 'true'
     ? process.env.EXPO_PUBLIC_CLERK_PROXY_URL || undefined
     : undefined;
   if (!publishableKey) {
+    if (isProductionBuild) {
+      return (
+        <SafeAreaProvider>
+          <ErrorBoundary>
+            <ConfigurationErrorScreen />
+          </ErrorBoundary>
+        </SafeAreaProvider>
+      );
+    }
     return (
       <SafeAreaProvider>
         <ErrorBoundary onError={(error, stackTrace) => {

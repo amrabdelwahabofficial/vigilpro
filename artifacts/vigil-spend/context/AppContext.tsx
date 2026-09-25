@@ -363,6 +363,7 @@ type AppContextValue = AppState & {
   setCurrency: (currency: CurrencyCode) => void;
   setProfileImageUri: (uri: string | null) => void;
   setProfileFirstName: (name: string) => void;
+  saveOnboardingAnswers: (answers: string[]) => void;
   completeOnboarding: (answers?: string[]) => void;
   refreshRates: () => Promise<Partial<Record<CurrencyCode, number>>>;
   hasCurrentRate: boolean;
@@ -675,6 +676,7 @@ export function VigilProvider({ children }: { children: React.ReactNode }) {
        if (!hasUsableRate(rate, scopedState.ratesUpdatedAt, scopedState.currency !== 'AED')) return Number.NaN;
        return displayAmount / rate!;
      },
+     saveOnboardingAnswers: (answers) => setState((current) => ({ ...current, onboardingAnswers: answers })),
     completeOnboarding: (answers) => setState((current) => ({ ...current, onboardingAnswers: answers ?? current.onboardingAnswers, onboardingComplete: true })),
     resetOnboarding: () => setState((current) => ({ ...current, onboardingComplete: false })),
     clearHistory: () => setState((current) => ({
